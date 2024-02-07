@@ -1,0 +1,98 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+enum PictureType {
+  Primary
+  LivingRoom
+  Bedroom
+  Kitchen
+  Bathroom
+  DiningRoom
+  Balcony
+  Outside
+  Other
+}
+
+model Inquiry {
+  id        String     @default(cuid()) @id
+  cabins    CabinInquiry[]
+  customer  User?      @relation(fields: [customerId], references: [id])
+  customerId String?
+}
+
+model CabinInquiry {
+  cabin     Cabin @relation(fields: [cabinId], references: [id])
+  cabinId   String
+  inquiry   Inquiry @relation(fields: [inquiryId], references: [id])
+  inquiryId String
+
+  startDate DateTime
+  endDate   DateTime
+  header    String @db.Text
+  body      String @db.Text
+
+  @@id([cabinId, inquiryId])
+}
+
+model Cabin {
+  id                String     @default(cuid()) @id
+  name              String
+  num_bathrooms     Int
+  num_bedrooms      Int
+  num_beds          Int
+  num_floors        Int
+  square_feet       Int
+  price_per_night   Decimal
+  description       String @db.Text
+  inquiries         CabinInquiry[]
+  reservations      CabinReservation[]
+  images            CabinImage[]
+}
+
+model CabinImage {
+  id                String          @default(cuid()) @id
+  url               String
+  type              PictureType              
+  cabin             Cabin           @relation(fields: [cabinId], references: [id])
+  cabinId           String
+}
+
+model CabinReservation {
+  cabin     Cabin @relation(fields: [cabinId], references: [id])
+  cabinId   String
+
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  reservationId String
+
+  startDate DateTime
+  endDate   DateTime
+
+  @@id([cabinId, reservationId])
+}
+
+model Reservation {
+  id         String     @default(cuid()) @id
+  cabins     CabinReservation[]
+  customer   User?      @relation(fields: [customerId], references: [id]) 
+  customerId String?
+}
+
+model User {
+  id            String       @default(cuid()) @id
+  name          String?
+  email         String?   @unique
+  createdAt     DateTime  @default(now()) @map(name: "created_at")
+  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
+  inquiries     Inquiry[]
+  reservations  Reservation[]
+  @@map(name: "users")
+}
