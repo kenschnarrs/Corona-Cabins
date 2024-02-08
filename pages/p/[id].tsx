@@ -2,36 +2,34 @@ import React from "react"
 import { GetServerSideProps } from "next"
 import ReactMarkdown from "react-markdown"
 import Layout from "../../components/Layout"
-import { PostProps } from "../../components/Post"
+import { CabinProps } from "../../lib/types"
+import Cabin from "../../components/Cabin"
+
+import prisma from '../../lib/prisma';
+import { PictureType } from "@prisma/client";
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const post = {
-    id: "1",
-    title: "Prisma is the perfect ORM for Next.js",
-    content: "[Prisma](https://github.com/prisma/prisma) and Next.js go _great_ together!",
-    published: false,
-    author: {
-      name: "Nikolas Burk",
-      email: "burk@prisma.io",
+  const cabins = prisma.cabin.findUnique({
+    where: {
+      id: String(params?.id),
     },
-  }
-  return {
-    props: post,
+    include: {
+      images: {}
+    }
+  })
+  return { 
+    props: { cabins }, 
   }
 }
 
-const Post: React.FC<PostProps> = (props) => {
-  let title = props.title
-  if (!props.published) {
-    title = `${title} (Draft)`
-  }
+const Post: React.FC<CabinProps> = (cabin) => {
 
   return (
     <Layout>
       <div>
-        <h2>{title}</h2>
-        <p>By {props?.author?.name || "Unknown author"}</p>
-        <ReactMarkdown children={props.content} />
+        <h2>{cabin.name}</h2>
+        <small>{cabin.price_per_night} pesos por noche</small>
+        <ReactMarkdown children={cabin.description} />
       </div>
       <style jsx>{`
         .page {

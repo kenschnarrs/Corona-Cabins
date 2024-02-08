@@ -1,40 +1,44 @@
 import React from "react"
 import { GetStaticProps } from "next"
 import Layout from "../components/Layout"
-import Post, { PostProps } from "../components/Post"
+import Cabin from "../components/Cabin"
+import {CabinProps} from "../lib/types";
+
+import prisma from '../lib/prisma';
+import { PictureType } from "@prisma/client";
 
 export const getStaticProps: GetStaticProps = async () => {
-  const feed = [
-    {
-      id: "1",
-      title: "Prisma is the perfect ORM for Next.js",
-      content: "[Prisma](https://github.com/prisma/prisma) and Next.js go _great_ together!",
-      published: false,
-      author: {
-        name: "Nikolas Burk",
-        email: "burk@prisma.io",
-      },
-    },
-  ]
+  const cabins = await prisma.cabin.findMany({
+    include: {
+      images: {
+        where: {
+          type: PictureType.Primary
+        }
+      }
+    }
+  })
+
+  const serializedCabins = JSON.parse(JSON.stringify(cabins));
+
   return { 
-    props: { feed }, 
+    props: { cabins: serializedCabins }, 
     revalidate: 10 
   }
 }
 
-type Props = {
-  feed: PostProps[]
+type SelectPageProps = {
+  cabins: CabinProps[]
 }
 
-const Blog: React.FC<Props> = (props) => {
+const SelectPage: React.FC<SelectPageProps> = (props) => {
   return (
     <Layout>
       <div className="page">
-        <h1>Public Feed</h1>
+        <h1>Cabins</h1>
         <main>
-          {props.feed.map((post) => (
-            <div key={post.id} className="post">
-              <Post post={post} />
+          {props.cabins.map((cabin) => (
+            <div key={cabin.id} className="post">
+              <Cabin cabin={cabin} />
             </div>
           ))}
         </main>
@@ -57,4 +61,4 @@ const Blog: React.FC<Props> = (props) => {
   )
 }
 
-export default Blog
+export default SelectPage
