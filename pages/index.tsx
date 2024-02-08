@@ -1,7 +1,7 @@
 import React from "react"
 import { GetStaticProps } from "next"
 import Layout from "../components/Layout"
-import Cabin from "../components/Cabin"
+import CabinOption from "../components/CabinOption"
 import {CabinProps} from "../lib/types";
 
 import prisma from '../lib/prisma';
@@ -38,7 +38,7 @@ const SelectPage: React.FC<SelectPageProps> = (props) => {
         <main>
           {props.cabins.map((cabin) => (
             <div key={cabin.id} className="post">
-              <Cabin cabin={cabin} />
+              <CabinOption cabin={cabin} />
             </div>
           ))}
         </main>

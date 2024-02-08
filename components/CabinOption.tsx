@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import {CabinProps} from "../lib/types";
 
 
-const Cabin: React.FC<{ cabin: CabinProps }> = ({ cabin }) => {
+const CabinOption: React.FC<{ cabin: CabinProps }> = ({ cabin }) => {
   return (
     <div onClick={() => Router.push("/p/[id]", `/p/${cabin.id}`)}>
       <h2>{cabin.name}</h2>
@@ -21,4 +21,4 @@ const Cabin: React.FC<{ cabin: CabinProps }> = ({ cabin }) => {
   );
 };
 
-export default Cabin;
+export default CabinOption;

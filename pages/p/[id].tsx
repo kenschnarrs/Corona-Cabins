@@ -3,13 +3,12 @@ import { GetServerSideProps } from "next"
 import ReactMarkdown from "react-markdown"
 import Layout from "../../components/Layout"
 import { CabinProps } from "../../lib/types"
-import Cabin from "../../components/Cabin"
 
 import prisma from '../../lib/prisma';
 import { PictureType } from "@prisma/client";
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const cabins = prisma.cabin.findUnique({
+  const cabin = await prisma.cabin.findUnique({
     where: {
       id: String(params?.id),
     },
@@ -17,19 +16,26 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       images: {}
     }
   })
+
+  const serializedCabin = JSON.parse(JSON.stringify(cabin));
+
   return { 
-    props: { cabins }, 
+    props: { cabin: serializedCabin }, 
   }
 }
 
-const Post: React.FC<CabinProps> = (cabin) => {
+type CabinShowPageProps = {
+  cabin: CabinProps;
+}
+
+const CabinShowPage: React.FC<CabinShowPageProps> = (props) => {
 
   return (
     <Layout>
       <div>
-        <h2>{cabin.name}</h2>
-        <small>{cabin.price_per_night} pesos por noche</small>
-        <ReactMarkdown children={cabin.description} />
+        <h2>{props.cabin.name}</h2>
+        <small>{props.cabin.price_per_night} pesos por noche</small>
+        <ReactMarkdown children={props.cabin.description} />
       </div>
       <style jsx>{`
         .page {
@@ -56,4 +62,4 @@ const Post: React.FC<CabinProps> = (cabin) => {
   )
 }
 
-export default Post
+export default CabinShowPage
