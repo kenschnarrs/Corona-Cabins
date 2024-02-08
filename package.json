@@ -1,14 +1,14 @@
 {
-  "name": "hello-next",
+  "name": "corona-cabins",
   "version": "1.0.0",
-  "description": "",
+  "description": "A website for the Corona family's cabins in rural Mexico.",
   "scripts": {
     "dev": "next",
     "build": "next build",
     "start": "next start"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["cabins", "cabañas", "corona", "mexico"],
+  "author": "Ken Schnarrs",
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^5.9.1",
