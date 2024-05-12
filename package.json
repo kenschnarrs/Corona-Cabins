@@ -4,25 +4,37 @@
   "description": "A website for the Corona family's cabins in rural Mexico.",
   "scripts": {
     "dev": "next",
-    "build": "next build",
-    "start": "next start"
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "seed": "node scripts/seed.mjs"
   },
-  "keywords": ["cabins", "cabañas", "corona", "mexico"],
+  "keywords": [
+    "cabins",
+    "cabañas",
+    "corona",
+    "mexico"
+  ],
   "author": "Ken Schnarrs",
   "license": "MIT",
   "dependencies": {
+    "@nextui-org/react": "^2.2.9",
     "@prisma/client": "^5.9.1",
     "@types/node": "^20.11.16",
     "@types/react": "^18.2.55",
-    "@vercel/blob": "^0.21.0",
+    "@vercel/blob": "^0.23.2",
+    "framer-motion": "^11.0.3",
     "next": "^14.1.0",
     "next-auth": "^4.24.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^9.0.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "prisma": "^5.9.1"
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "prisma": "^5.13.0",
+    "tailwindcss": "^3.4.1"
   }
 }

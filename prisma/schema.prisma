@@ -13,7 +13,9 @@ datasource db {
 enum PictureType {
   Primary
   LivingRoom
-  Bedroom
+  Bedroom1
+  Bedroom2
+  Bedroom3
   Kitchen
   Bathroom
   DiningRoom

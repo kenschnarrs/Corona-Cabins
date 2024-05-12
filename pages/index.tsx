@@ -1,46 +1,19 @@
+
 import React from "react"
-import { GetStaticProps } from "next"
 import Layout from "../components/Layout"
-import CabinOption from "../components/CabinOption"
-import {CabinProps} from "../lib/types";
 
-import prisma from '../lib/prisma';
-import { PictureType } from "@prisma/client";
+import Router from "next/router";
 
-export const getStaticProps: GetStaticProps = async () => {
-  const cabins = await prisma.cabin.findMany({
-    include: {
-      images: {
-        where: {
-          type: PictureType.Primary
-        }
-      }
-    }
-  })
+import {Button} from '@nextui-org/react'
 
-  const serializedCabins = JSON.parse(JSON.stringify(cabins));
-
-  return { 
-    props: { cabins: serializedCabins }, 
-    revalidate: 10 
-  }
-}
-
-type SelectPageProps = {
-  cabins: CabinProps[]
-}
-
-const SelectPage: React.FC<SelectPageProps> = (props) => {
+// home page, has some pictures and allows the viewing of the cabins
+const IndexPage: React.FC = () => {
   return (
     <Layout>
       <div className="page">
-        <h1>Cabins</h1>
+        <h1>Welcome</h1>
         <main>
-          {props.cabins.map((cabin) => (
-            <div key={cabin.id} className="post">
-              <CabinOption cabin={cabin} />
-            </div>
-          ))}
+          <Button onClick={() => Router.push("/select")}>View Cabins</Button>
         </main>
       </div>
       <style jsx>{`
@@ -61,4 +34,4 @@ const SelectPage: React.FC<SelectPageProps> = (props) => {
   )
 }
 
-export default SelectPage
+export default IndexPage

@@ -6,6 +6,7 @@ import { CabinProps } from "../../lib/types"
 
 import prisma from '../../lib/prisma';
 import { PictureType } from "@prisma/client";
+import Link from "next/link"
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const cabin = await prisma.cabin.findUnique({
@@ -35,6 +36,13 @@ const CabinShowPage: React.FC<CabinShowPageProps> = (props) => {
       <div>
         <h2>{props.cabin.name}</h2>
         <small>{props.cabin.price_per_night} pesos por noche</small>
+
+        <Link href="/inquiries">
+          <button>
+            <a>Inquire</a>
+          </button>
+        </Link>
+        
         <ReactMarkdown children={props.cabin.description} />
       </div>
       <style jsx>{`

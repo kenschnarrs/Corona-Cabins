@@ -1,23 +1,20 @@
 import React from "react";
 import Router from "next/router";
-import ReactMarkdown from "react-markdown";
 
-import {CabinProps} from "../lib/types";
-
+import { CabinProps } from "../lib/types";
+import Link from "next/link";
 
 const CabinOption: React.FC<{ cabin: CabinProps }> = ({ cabin }) => {
   return (
-    <div onClick={() => Router.push("/p/[id]", `/p/${cabin.id}`)}>
-      <h2>{cabin.name}</h2>
-      <small>{cabin.price_per_night} pesos por noche</small>
-      <ReactMarkdown children={cabin.description} />
-      <style jsx>{`
-        div {
-          color: inherit;
-          padding: 2rem;
-        }
-      `}</style>
-    </div>
+    <Link href="/p/[cabinId]" as={`/p/${cabin.id}`}>
+      <a className="block border border-gray-300 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring focus:border-blue-300">
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold">{cabin.name}</h2>
+          <p className="text-sm text-gray-600">{cabin.price_per_night} pesos por noche</p>
+          <p className="text-sm text-gray-700">{cabin.description}</p>
+        </div>
+      </a>
+    </Link>
   );
 };
 
