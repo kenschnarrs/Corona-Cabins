@@ -30,44 +30,15 @@ type CabinShowPageProps = {
 }
 
 const CabinShowPage: React.FC<CabinShowPageProps> = (props) => {
-
   return (
     <Layout>
       <div>
         <h2>{props.cabin.name}</h2>
         <small>{props.cabin.price_per_night} pesos por noche</small>
-
-        <Link href="/inquiries">
-          <button>
-            <a>Inquire</a>
-          </button>
-        </Link>
-        
-        <ReactMarkdown children={props.cabin.description} />
+        <p>{props.cabin.description}</p>
       </div>
-      <style jsx>{`
-        .page {
-          background: white;
-          padding: 2rem;
-        }
-
-        .actions {
-          margin-top: 2rem;
-        }
-
-        button {
-          background: #ececec;
-          border: 0;
-          border-radius: 0.125rem;
-          padding: 1rem 2rem;
-        }
-
-        button + button {
-          margin-left: 1rem;
-        }
-      `}</style>
     </Layout>
-  )
+  );
 }
 
 export default CabinShowPage
