@@ -11,11 +11,11 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
-    "test": "node scripts/check-i18n.mjs"
+    "test": "node scripts/check-i18n.mjs && node scripts/check-rich-text.mjs"
   },
   "keywords": [
     "cabins",
-    "caba\u00f1as",
+    "cabañas",
     "corona",
     "mexico"
   ],
@@ -30,9 +30,11 @@
     "next-auth": "^4.24.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "sanitize-html": "^2.17.7",
     "typescript": "^5.3.3"
   },
   "devDependencies": {
+    "@types/sanitize-html": "^2.16.1",
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.35",
     "prisma": "^5.13.0",
