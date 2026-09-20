@@ -1,3 +1,65 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-cream text-ink font-serif;
+  }
+  a {
+    @apply no-underline text-inherit;
+  }
+}
+
+@layer components {
+  /* Full-bleed hero photo with the two mockup shade gradients. */
+  .hero-bg {
+    background-image:
+      linear-gradient(110deg, rgba(39, 18, 8, 0.34), rgba(39, 18, 8, 0.05)),
+      var(--hero-url);
+    background-position: center;
+    background-size: cover;
+  }
+  .hero-shade {
+    background: linear-gradient(
+      to bottom,
+      rgba(27, 13, 7, 0.18),
+      rgba(27, 13, 7, 0.12) 50%,
+      rgba(27, 13, 7, 0.72)
+    );
+  }
+  /* Dark gradient at the bottom of each cabin card photo. */
+  .card-photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(35, 17, 8, 0.55), transparent 55%);
+  }
+  /* Painted night-mountain art for the experience section. */
+  .experience-art {
+    background: linear-gradient(#172332, #714432 62%, #1d1713);
+  }
+  .experience-moon {
+    position: absolute;
+    top: 10%;
+    left: 18%;
+    font-size: 100px;
+    color: #f2c76a;
+    text-shadow: 0 0 30px rgba(242, 199, 106, 0.5);
+  }
+  .experience-mountains {
+    position: absolute;
+    inset: 35% -5% 0;
+    background:
+      linear-gradient(140deg, transparent 49%, #392217 50%) 0 0 / 50% 100%,
+      linear-gradient(220deg, transparent 49%, #281812 50%) 100% 0 / 58% 100%;
+    background-repeat: no-repeat;
+  }
+  /* Keep the expand/collapse marker clean across browsers. */
+  .cabin-details > summary::-webkit-details-marker {
+    display: none;
+  }
+}

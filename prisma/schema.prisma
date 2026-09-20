@@ -55,6 +55,9 @@ model Cabin {
   square_feet       Int
   price_per_night   Decimal
   description       String @db.Text
+  has_kitchen       Boolean    @default(false)
+  has_wood_stove    Boolean    @default(false)
+  has_terrace       Boolean    @default(false)
   inquiries         CabinInquiry[]
   reservations      CabinReservation[]
   images            CabinImage[]

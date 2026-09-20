@@ -1,18 +1,16 @@
-
 import { AppProps } from "next/app";
-import { SessionProvider } from 'next-auth/react';
-import {NextUIProvider} from '@nextui-org/react'
+import { SessionProvider } from "next-auth/react";
+import { LanguageProvider } from "../lib/i18n";
 
-import '../globals.css'
-
+import "../globals.css";
 
 const App = ({ Component, pageProps }: AppProps) => {
   return (
-    <NextUIProvider>
-      <SessionProvider session={pageProps.session}>
+    <SessionProvider session={pageProps.session}>
+      <LanguageProvider>
         <Component {...pageProps} />
-      </SessionProvider>
-    </NextUIProvider>
+      </LanguageProvider>
+    </SessionProvider>
   );
 };
 

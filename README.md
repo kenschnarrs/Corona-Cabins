@@ -69,3 +69,21 @@ Schema changes go through versioned Prisma migrations in `prisma/migrations`:
   configuration so sessions survive redeploys.
 - No credentials, secrets, or admin email addresses belong in this
   repository.
+
+## Phase 1: public site (this branch)
+
+- The home page is the one-page landing from the approved mockup: hero,
+  three cabin cards, experience section, and footer. `/select` redirects to
+  `/#cabins`.
+- Cabin cards and detail pages are fed from the live database. Card names
+  and prices come straight from Postgres; amenity chips are built from the
+  `has_kitchen`, `has_wood_stove`, and `has_terrace` boolean columns added
+  by the `cabin_amenities` migration (run `npm run db:migrate` to apply).
+- Spanish is the default language with an English toggle. UI strings and
+  per-cabin marketing copy live in `lib/i18n/es.json` and `lib/i18n/en.json`;
+  `npm test` checks the two dictionaries stay in sync.
+- Photos are labeled temporary placeholders (`Foto temporal` / `Temporary
+  photo`) from `lib/placeholders.ts` until real property photos are supplied.
+  Once a cabin has a Primary image in the database, that image is shown
+  instead (Phase 2 wires uploads).
+- The UI is plain Tailwind; the NextUI dependency was removed in this phase.

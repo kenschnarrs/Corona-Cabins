@@ -14,6 +14,9 @@ async function seed() {
           num_floors: 2,
           square_feet: 0, // TODO: add sq ft.
           price_per_night: 1800,
+          has_kitchen: true,
+          has_wood_stove: true,
+          has_terrace: true,
           description: `
           El baño tiene elementos básicos, toallas, jabón, y papel higiénico.
           Hay una terraza pequeña.
@@ -29,6 +32,9 @@ async function seed() {
           num_floors: 1,
           square_feet: 0,
           price_per_night: 1200,
+          has_kitchen: true,
+          has_wood_stove: true,
+          has_terrace: false,
           description: `
           El baño tiene elementos básicos, toallas, jabón, y papel higiénico.
           La cocina tiene utensilios de cocina, los básicos, platos, vasos, tazas, sartenes, comal, refrigerador, y microondas.
@@ -43,6 +49,9 @@ async function seed() {
           num_floors: 2,
           square_feet: 0,
           price_per_night: 850,
+          has_kitchen: true,
+          has_wood_stove: true,
+          has_terrace: true,
           description: `
           El baño tiene elementos básicos, toallas, jabón, y papel higiénico.
           Hay una terraza pequeña.

@@ -1,37 +1,35 @@
+import React from "react";
+import { GetStaticProps } from "next";
+import Layout from "../components/Layout";
+import Hero from "../components/Hero";
+import CabinsSection from "../components/CabinsSection";
+import ExperienceSection from "../components/ExperienceSection";
+import Seo from "../components/Seo";
+import { getCabins } from "../lib/cabins";
+import type { CabinProps } from "../lib/types";
 
-import React from "react"
-import Layout from "../components/Layout"
+export const getStaticProps: GetStaticProps = async () => {
+  const cabins = await getCabins();
+  return { props: { cabins }, revalidate: 10 };
+};
 
-import Router from "next/router";
+type HomePageProps = {
+  cabins: CabinProps[];
+};
 
-import {Button} from '@nextui-org/react'
-
-// home page, has some pictures and allows the viewing of the cabins
-const IndexPage: React.FC = () => {
+// One-page landing matching Ken's approved mockup: hero, cabin cards fed
+// from the live database, experience section, footer.
+const HomePage: React.FC<HomePageProps> = ({ cabins }) => {
   return (
-    <Layout>
-      <div className="page">
-        <h1>Welcome</h1>
-        <main>
-          <Button onClick={() => Router.push("/select")}>View Cabins</Button>
-        </main>
-      </div>
-      <style jsx>{`
-        .post {
-          background: white;
-          transition: box-shadow 0.1s ease-in;
-        }
-
-        .post:hover {
-          box-shadow: 1px 1px 3px #aaa;
-        }
-
-        .post + .post {
-          margin-top: 2rem;
-        }
-      `}</style>
+    <Layout header="none">
+      <Seo path="/" />
+      <main>
+        <Hero />
+        <CabinsSection cabins={cabins} />
+        <ExperienceSection />
+      </main>
     </Layout>
-  )
-}
+  );
+};
 
-export default IndexPage
+export default HomePage;
