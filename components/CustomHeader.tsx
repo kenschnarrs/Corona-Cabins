@@ -22,7 +22,7 @@ const CustomHeader: React.FC = () => {
           Cabañas Corona
         </Link>
         {
-          session && (
+          (session?.user as { isAdmin?: boolean } | undefined)?.isAdmin && (
             <Link href="/inquiries">
               Inquiries
             </Link>
