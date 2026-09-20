@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "title": "Corona Cabins | Carichí, Chihuahua",
+    "description": "Three family cabins in Carichí, Chihuahua, 43 minutes from the Bacabureachi hot springs. Slow down where the mountains, silence, and stars still set the pace."
+  },
+  "nav": {
+    "skip": "Skip to the cabins",
+    "languageLabel": "Language",
+    "home": "Corona Cabins"
+  },
+  "hero": {
+    "eyebrow": "Carichí, Chihuahua · Mexico",
+    "title": "Corona Cabins",
+    "subtitle": "Slow down where the mountains, silence, and stars still set the pace.",
+    "cta": "Explore the cabins",
+    "location": "43 minutes from the Bacabureachi hot springs",
+    "tempPhoto": "Temporary photo"
+  },
+  "cabins": {
+    "eyebrow": "Three ways to get away",
+    "heading": "Choose your cabin",
+    "perNight": "MXN / night",
+    "viewDetails": "View details",
+    "viewPage": "View cabin page",
+    "tempPhoto": "Temporary photo"
+  },
+  "amenities": {
+    "bedroom_one": "bedroom",
+    "bedroom_other": "bedrooms",
+    "bed_one": "double bed",
+    "bed_other": "double beds",
+    "bathroom_one": "bathroom",
+    "bathroom_other": "bathrooms",
+    "floor_one": "floor",
+    "floor_other": "floors",
+    "kitchen": "Equipped kitchen",
+    "woodStove": "Wood-burning stove",
+    "terrace": "Terrace"
+  },
+  "experience": {
+    "eyebrow": "Carichí, Chihuahua",
+    "heading": "Everything you need to slow down",
+    "body": "Grills, a children’s area, private parking, and dark nights beneath the Chihuahua sky.",
+    "checkin": "Check-in 1:00 PM",
+    "checkout": "Check-out 12:00 PM",
+    "cta": "Check availability"
+  },
+  "footer": {
+    "name": "Cabañas Corona",
+    "location": "Carichí, Chihuahua, Mexico",
+    "copyright": "© 2026 Cabañas Corona",
+    "admin": "Admin"
+  },
+  "cabinCopy": {
+    "Cabaña Grande": {
+      "name": "Large Cabin",
+      "tag": "Best for families",
+      "desc": "Two floors, generous spaces, and room to bring everyone together.",
+      "details": "Ideal for larger groups. Includes a kitchen, bathroom, terrace, and wood-burning stove."
+    },
+    "Cabaña Mediana": {
+      "name": "Medium Cabin",
+      "tag": "Comfortable and welcoming",
+      "desc": "A practical stay for small families or groups of friends.",
+      "details": "A balanced option for small families or friend groups."
+    },
+    "Cabaña Pequeña": {
+      "name": "Small Cabin",
+      "tag": "An intimate escape",
+      "desc": "Two floors, a terrace, and just enough space to disconnect.",
+      "details": "The most intimate option, ideal for a couple or a quiet stay."
+    }
+  },
+  "detail": {
+    "back": "← All cabins",
+    "perNight": "MXN / night",
+    "tempPhoto": "Temporary photo",
+    "descriptionHeading": "Description",
+    "amenitiesHeading": "Amenities",
+    "notFound": "We could not find this cabin."
+  },
+  "inquiries": {
+    "heading": "Inquiries",
+    "empty": "Booking requests will appear here.",
+    "signOut": "Sign out"
+  }
+}

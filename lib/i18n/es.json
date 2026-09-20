@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "title": "Cabañas Corona | Carichí, Chihuahua",
+    "description": "Tres cabañas familiares en Carichí, Chihuahua, a 43 minutos de las aguas termales de Bacabureachi. Descansa donde la sierra, el silencio y las estrellas todavía mandan."
+  },
+  "nav": {
+    "skip": "Saltar a las cabañas",
+    "languageLabel": "Idioma",
+    "home": "Cabañas Corona"
+  },
+  "hero": {
+    "eyebrow": "Carichí, Chihuahua · México",
+    "title": "Cabañas Corona",
+    "subtitle": "Descansa donde la sierra, el silencio y las estrellas todavía mandan.",
+    "cta": "Ver las cabañas",
+    "location": "A 43 minutos de las aguas termales de Bacabureachi",
+    "tempPhoto": "Foto temporal"
+  },
+  "cabins": {
+    "eyebrow": "Tres maneras de escapar",
+    "heading": "Elige tu cabaña",
+    "perNight": "MXN / noche",
+    "viewDetails": "Ver detalles",
+    "viewPage": "Ver página de la cabaña",
+    "tempPhoto": "Foto temporal"
+  },
+  "amenities": {
+    "bedroom_one": "habitación",
+    "bedroom_other": "habitaciones",
+    "bed_one": "cama matrimonial",
+    "bed_other": "camas matrimoniales",
+    "bathroom_one": "baño",
+    "bathroom_other": "baños",
+    "floor_one": "piso",
+    "floor_other": "pisos",
+    "kitchen": "Cocina equipada",
+    "woodStove": "Calentón de leña",
+    "terrace": "Terraza"
+  },
+  "experience": {
+    "eyebrow": "Carichí, Chihuahua",
+    "heading": "Todo lo necesario para bajar el ritmo",
+    "body": "Asadores, área infantil, estacionamiento privado y noches oscuras bajo el cielo de Chihuahua.",
+    "checkin": "Entrada 1:00 PM",
+    "checkout": "Salida 12:00 PM",
+    "cta": "Consultar disponibilidad"
+  },
+  "footer": {
+    "name": "Cabañas Corona",
+    "location": "Carichí, Chihuahua, México",
+    "copyright": "© 2026 Cabañas Corona",
+    "admin": "Admin"
+  },
+  "cabinCopy": {
+    "Cabaña Grande": {
+      "name": "Cabaña Grande",
+      "tag": "Ideal para familias",
+      "desc": "Dos pisos, espacios amplios y lugar para reunir a todos.",
+      "details": "Perfecta para grupos grandes. Incluye cocina, baño, terraza y calentón de leña."
+    },
+    "Cabaña Mediana": {
+      "name": "Cabaña Mediana",
+      "tag": "Cómoda y acogedora",
+      "desc": "Una estancia práctica para familias pequeñas o amigos.",
+      "details": "Una opción equilibrada para familias pequeñas o grupos de amigos."
+    },
+    "Cabaña Pequeña": {
+      "name": "Cabaña Pequeña",
+      "tag": "Escapada íntima",
+      "desc": "Dos pisos, terraza y el espacio justo para desconectarse.",
+      "details": "La opción más íntima, ideal para una pareja o una estancia tranquila."
+    }
+  },
+  "detail": {
+    "back": "← Todas las cabañas",
+    "perNight": "MXN / noche",
+    "tempPhoto": "Foto temporal",
+    "descriptionHeading": "Descripción",
+    "amenitiesHeading": "Servicios",
+    "notFound": "No encontramos esta cabaña."
+  },
+  "inquiries": {
+    "heading": "Solicitudes",
+    "empty": "Las solicitudes de reserva aparecerán aquí.",
+    "signOut": "Cerrar sesión"
+  }
+}
