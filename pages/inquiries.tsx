@@ -1,8 +1,21 @@
-
 import React from 'react';
+import { GetServerSideProps } from "next";
+import { getServerSession } from "next-auth/next";
 
 import Layout from "../components/Layout"
-import Router from "next/router";
+import { authOptions } from "./api/auth/[...nextauth]";
+import { isAdminEmail } from "../lib/admin";
+
+// Admin-only page: enforced on the server, not just hidden in the UI.
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const session = await getServerSession(ctx.req, ctx.res, authOptions);
+  if (!session || !isAdminEmail(session.user?.email)) {
+    return {
+      redirect: { destination: "/api/auth/signin", permanent: false },
+    };
+  }
+  return { props: {} };
+};
 
 const InquiriesPage: React.FC = () => {
     return (
