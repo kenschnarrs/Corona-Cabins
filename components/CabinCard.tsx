@@ -11,7 +11,7 @@ type Props = {
 };
 
 const CabinCard: React.FC<Props> = ({ cabin, index }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const copy = cabinCopy(t, cabin.name);
   const primary = cabin.images.find((img) => img.type === "Primary");
   const photo = cabinPhoto(cabin.name, primary?.url ?? null);
@@ -53,7 +53,7 @@ const CabinCard: React.FC<Props> = ({ cabin, index }) => {
             {t.cabins.perNight}
           </p>
         </div>
-        {copy && <p className="min-h-[54px] leading-normal text-muted">{copy.desc}</p>}
+        <div className="rich-text-display min-h-[54px] leading-normal text-muted" dangerouslySetInnerHTML={{ __html: lang === "es" ? cabin.description_es : cabin.description_en }} />
         <div className="flex flex-wrap gap-2 py-[18px]">
           {chips.map((chip) => (
             <span key={chip} className="bg-chip px-[9px] py-[7px] font-sans text-[11px]">

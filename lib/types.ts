@@ -8,6 +8,8 @@ export type CabinProps = {
   square_feet: number;
   price_per_night: number;
   description: string;
+  description_es: string;
+  description_en: string;
   has_kitchen: boolean;
   has_wood_stove: boolean;
   has_terrace: boolean;
@@ -19,4 +21,6 @@ export type CabinImageProps = {
   url: string;
   type: string;
   cabinId: string;
+  sort_order: number;
+  blob_pathname?: string | null;
 };

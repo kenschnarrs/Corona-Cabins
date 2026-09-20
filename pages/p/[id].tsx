@@ -30,7 +30,7 @@ type CabinShowPageProps = {
 };
 
 const CabinShowPage: React.FC<CabinShowPageProps> = ({ cabin }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const copy = cabinCopy(t, cabin.name);
   const primary = cabin.images.find((img) => img.type === "Primary");
   const photo = cabinPhoto(cabin.name, primary?.url ?? null);
@@ -73,9 +73,7 @@ const CabinShowPage: React.FC<CabinShowPageProps> = ({ cabin }) => {
             {t.detail.perNight}
           </p>
         </div>
-        {copy && (
-          <p className="mt-4 text-lg leading-relaxed text-muted">{copy.desc}</p>
-        )}
+        <div className="rich-text-display mt-4 text-lg leading-relaxed text-muted" dangerouslySetInnerHTML={{ __html: lang === "es" ? cabin.description_es : cabin.description_en }} />
         <h2 className="mb-3 mt-10 font-sans text-xs font-bold uppercase tracking-[0.24em] text-eyebrow">
           {t.detail.amenitiesHeading}
         </h2>
@@ -89,9 +87,7 @@ const CabinShowPage: React.FC<CabinShowPageProps> = ({ cabin }) => {
         <h2 className="mb-3 mt-10 font-sans text-xs font-bold uppercase tracking-[0.24em] text-eyebrow">
           {t.detail.descriptionHeading}
         </h2>
-        <p className="whitespace-pre-line leading-relaxed text-muted">
-          {cabin.description}
-        </p>
+        <div className="rich-text-display leading-relaxed text-muted" dangerouslySetInnerHTML={{ __html: lang === "es" ? cabin.description_es : cabin.description_en }} />
       </main>
     </Layout>
   );

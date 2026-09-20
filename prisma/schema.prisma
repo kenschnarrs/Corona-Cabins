@@ -55,6 +55,8 @@ model Cabin {
   square_feet       Int
   price_per_night   Decimal
   description       String @db.Text
+  description_es    String @db.Text
+  description_en    String @db.Text
   has_kitchen       Boolean    @default(false)
   has_wood_stove    Boolean    @default(false)
   has_terrace       Boolean    @default(false)
@@ -69,6 +71,10 @@ model CabinImage {
   type              PictureType              
   cabin             Cabin           @relation(fields: [cabinId], references: [id])
   cabinId           String
+  sort_order        Int             @default(0)
+  blob_pathname     String?         @unique
+
+  @@index([cabinId, sort_order])
 }
 
 model CabinReservation {

@@ -11,7 +11,7 @@ export async function getCabins(): Promise<CabinProps[]> {
   const cabins = await prisma.cabin.findMany({
     include: {
       images: {
-        where: { type: PictureType.Primary },
+        orderBy: { sort_order: "asc" },
       },
     },
     orderBy: { price_per_night: "desc" },
