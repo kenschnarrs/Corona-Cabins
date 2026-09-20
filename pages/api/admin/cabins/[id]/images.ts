@@ -15,8 +15,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!(await requireAdmin(req, res))) return;
   if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
   const cabinId = String(req.query.id);
-  const cabin = await prisma.cabin.findUnique({ where: { id: cabinId }, include: { images: true } });
+  const cabin = await prisma.cabin.findUnique({ where: { id: cabinId }, include: { images: { orderBy: { sort_order: "asc" } } } });
   if (!cabin) return res.status(404).json({ error: "Cabin not found." });
+  const position = Number(req.body.position);
+  const makePrimary = req.body.makePrimary === true;
+  if (!Number.isInteger(position) || position < 0 || position > cabin.images.length)
+    return res.status(400).json({ error: "Choose a valid photo position." });
   let image;
   try { image = validateImageUpload(req.body.dataUrl, req.body.contentType); }
   catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image." }); }
@@ -24,10 +28,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     access: "public", contentType: image.contentType, addRandomSuffix: true,
   });
   try {
-    const created = await prisma.cabinImage.create({ data: {
-      cabinId, url: blob.url, blob_pathname: blob.pathname, type: cabin.images.length ? "Other" : "Primary",
-      sort_order: cabin.images.length,
-    }});
+    const created = await prisma.$transaction(async (tx) => {
+      await Promise.all(cabin.images.slice(position).map((item) => tx.cabinImage.update({ where: { id: item.id }, data: { sort_order: { increment: 1 } } })));
+      if (makePrimary) await tx.cabinImage.updateMany({ where: { cabinId, type: "Primary" }, data: { type: "Other" } });
+      return tx.cabinImage.create({ data: {
+        cabinId, url: blob.url, blob_pathname: blob.pathname,
+        type: makePrimary || !cabin.images.length ? "Primary" : "Other",
+        sort_order: position,
+      }});
+    });
     return res.status(201).json(created);
   } catch (error) {
     await del(blob.url).catch(() => undefined);
