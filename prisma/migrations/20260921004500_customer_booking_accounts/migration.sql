@@ -1,0 +1,14 @@
+-- Phase 4: exact customer-facing booking lifecycle.
+ALTER TYPE "BookingStatus" RENAME TO "BookingStatus_old";
+CREATE TYPE "BookingStatus" AS ENUM ('PENDING', 'SCHEDULED', 'CUSTOMER_CANCELLED', 'MANAGEMENT_CANCELLED', 'ACTIVE', 'COMPLETED');
+ALTER TABLE "Inquiry" ALTER COLUMN "status" DROP DEFAULT;
+ALTER TABLE "Inquiry" ALTER COLUMN "status" TYPE "BookingStatus" USING (
+  CASE "status"::text
+    WHEN 'CONFIRMED' THEN 'SCHEDULED'
+    WHEN 'DECLINED' THEN 'MANAGEMENT_CANCELLED'
+    WHEN 'CANCELLED' THEN 'MANAGEMENT_CANCELLED'
+    ELSE 'PENDING'
+  END
+)::"BookingStatus";
+ALTER TABLE "Inquiry" ALTER COLUMN "status" SET DEFAULT 'PENDING';
+DROP TYPE "BookingStatus_old";

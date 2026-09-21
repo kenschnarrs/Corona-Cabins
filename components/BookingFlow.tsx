@@ -1,4 +1,5 @@
 import React, { FormEvent, useMemo, useState } from "react";
+import { signIn, useSession } from "next-auth/react";
 import type { CabinProps } from "../lib/types";
 import { cabinCopy, useLanguage } from "../lib/i18n";
 import { formatPrice } from "../lib/cabins";
@@ -8,6 +9,7 @@ type Props = { cabins: CabinProps[] };
 
 export default function BookingFlow({ cabins }: Props) {
   const { t } = useLanguage();
+  const { data: session, status: sessionStatus } = useSession();
   const b = t.booking;
   const [selected, setSelected] = useState<string[]>([]);
   const [startDate, setStartDate] = useState("");
@@ -37,6 +39,7 @@ export default function BookingFlow({ cabins }: Props) {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (!session?.user?.email) { await signIn("google", { callbackUrl: "/#booking" }); return; }
     if (status !== "available") return checkAvailability();
     setStatus("submitting");
     const response = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cabinIds: selected, startDate, endDate, customerName, customerEmail, customerPhone, notes, website: "" }) });
@@ -64,9 +67,10 @@ export default function BookingFlow({ cabins }: Props) {
         </div>
         <aside className="border border-cardborder bg-card p-6 shadow-[0_18px_50px_rgba(73,39,19,.08)]">
           <h3 className="mt-0 text-3xl">3. {b.details}</h3>
-          <div className="space-y-4"><label className="block font-sans text-sm font-bold">{b.name}<input required value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal" maxLength={120}/></label><label className="block font-sans text-sm font-bold">{b.email}<input required type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal" maxLength={254}/></label><label className="block font-sans text-sm font-bold">{b.phone}<input required type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal" maxLength={40}/></label><label className="block font-sans text-sm font-bold">{b.notes}<textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-2 block min-h-[110px] w-full border border-cardborder bg-white p-3 font-normal" maxLength={2000}/></label></div>
+          <div className="space-y-4"><label className="block font-sans text-sm font-bold">{b.name}<input required value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal" maxLength={120}/></label><label className="block font-sans text-sm font-bold">{b.email}<input required readOnly={!!session?.user?.email} type="email" value={session?.user?.email || customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal read-only:bg-[#f2eee8]" maxLength={254}/></label><label className="block font-sans text-sm font-bold">{b.phone}<input required type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal" maxLength={40}/></label><label className="block font-sans text-sm font-bold">{b.notes}<textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-2 block min-h-[110px] w-full border border-cardborder bg-white p-3 font-normal" maxLength={2000}/></label></div>
           {nights > 0 && selected.length > 0 && <p className="border-t border-cardborder pt-4 font-sans text-sm"><strong>{nights} {nights === 1 ? b.night : b.nights}</strong><br/>{b.estimated}: {formatPrice(total)}</p>}
           <p className="font-sans text-xs leading-relaxed text-muted">{b.requestNote}</p>
+          {sessionStatus !== "authenticated" && <p className="font-sans text-xs leading-relaxed text-muted">Google sign-in is required before submitting. This connects the request to your private booking-status page.</p>}
           <button type="submit" disabled={status !== "available"} className="w-full bg-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-white disabled:opacity-40">{status === "submitting" ? b.submitting : b.submit}</button>
         </aside>
       </form>

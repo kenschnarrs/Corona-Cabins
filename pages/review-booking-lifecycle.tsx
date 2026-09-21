@@ -1,0 +1,28 @@
+import React from "react";
+import { GetServerSideProps } from "next";
+import Layout from "../components/Layout";
+import Seo from "../components/Seo";
+
+type Demo = { id: string; status: string; customer: string; email: string; cabin: string; dates: string; note: string; canCancel: boolean };
+const demos: Demo[] = [
+  { id: "TEST-PENDING", status: "PENDING", customer: "Preview Guest", email: "preview.customer@example.test", cabin: "Cabaña Grande", dates: "2026-10-14 → 2026-10-17", note: "Awaiting management review. Blocks these dates.", canCancel: true },
+  { id: "TEST-SCHEDULED", status: "SCHEDULED", customer: "Preview Guest", email: "preview.customer@example.test", cabin: "Cabaña Mediana", dates: "2026-11-05 → 2026-11-08", note: "Approved by management. Blocks these dates.", canCancel: true },
+  { id: "TEST-ACTIVE", status: "ACTIVE", customer: "Preview Guest", email: "preview.customer@example.test", cabin: "Cabaña Pequeña", dates: "2026-09-19 → 2026-09-22", note: "Derived from SCHEDULED after check-in. Cancellation is closed.", canCancel: false },
+  { id: "TEST-COMPLETED", status: "COMPLETED", customer: "Preview Guest", email: "preview.customer@example.test", cabin: "Cabaña Grande", dates: "2026-09-10 → 2026-09-13", note: "Derived after checkout because neither side cancelled.", canCancel: false },
+  { id: "TEST-CUSTOMER-CANCELLED", status: "CUSTOMER_CANCELLED", customer: "Preview Guest", email: "preview.customer@example.test", cabin: "Cabaña Mediana", dates: "2026-12-03 → 2026-12-06", note: "Customer cancellation is final and no longer blocks availability.", canCancel: false },
+  { id: "TEST-MANAGEMENT-CANCELLED", status: "MANAGEMENT_CANCELLED", customer: "Preview Guest", email: "preview.customer@example.test", cabin: "Cabaña Pequeña", dates: "2027-01-08 → 2027-01-11", note: "Management cancellation is final and no longer blocks availability.", canCancel: false },
+];
+export const getServerSideProps: GetServerSideProps = async () => process.env.VERCEL_ENV === "production" ? { notFound: true } : { props: {} };
+const label = (s: string) => s.replaceAll("_", " ");
+export default function ReviewBookingLifecycle() {
+  return <Layout><Seo title="Booking lifecycle review | Cabañas Corona" path="/review-booking-lifecycle"/><main className="mx-auto max-w-[1180px] px-5 py-12 sm:px-8">
+    <p className="font-sans text-xs font-bold uppercase tracking-[.18em] text-eyebrow">Preview-only test fixture</p>
+    <h1 className="m-0 text-[clamp(40px,6vw,68px)] leading-none tracking-[-.045em]">Populated booking review</h1>
+    <p className="max-w-[850px] text-muted">These clearly labeled records are visual fixtures only. They do not create customers, bookings, or calendar events. The real customer and admin routes keep Google authentication and server-side ownership checks.</p>
+    <section className="mt-8 grid gap-6 lg:grid-cols-2">
+      <div><h2 className="text-3xl">Customer view</h2><p className="text-muted">Signed in as preview.customer@example.test</p><div className="space-y-4">{demos.map(b => <article key={b.id} className="border border-cardborder bg-card p-5 shadow"><div className="flex flex-wrap justify-between gap-2"><strong className="font-sans text-xs uppercase tracking-[.12em] text-terra">{label(b.status)}</strong><span className="font-sans text-xs text-muted">{b.id}</span></div><h3 className="mb-1 mt-4 text-2xl">{b.cabin}</h3><p className="m-0 font-sans text-sm">{b.dates}</p><p className="text-muted">{b.note}</p>{b.canCancel ? <button className="border border-terra px-4 py-3 font-sans text-xs font-extrabold uppercase text-terra">Cancel booking</button> : <p className="font-sans text-xs font-bold uppercase tracking-[.08em] text-muted">Cancellation unavailable</p>}</article>)}</div></div>
+      <div><h2 className="text-3xl">Management view</h2><p className="text-muted">Management can set only Pending, Scheduled, or Management Cancelled.</p><div className="space-y-4">{demos.map(b => <article key={b.id} className="border border-cardborder bg-card p-5 shadow"><div className="flex flex-wrap justify-between gap-2"><strong className="font-sans text-xs uppercase tracking-[.12em] text-terra">Effective: {label(b.status)}</strong><span className="font-sans text-xs text-muted">{b.id}</span></div><h3 className="mb-1 mt-4 text-2xl">{b.customer}</h3><p className="m-0 font-sans text-sm"><span>{b.email}</span> · {b.cabin}</p><p className="font-sans text-sm">{b.dates}</p><div className="mt-4 flex flex-wrap gap-2">{["PENDING","SCHEDULED","MANAGEMENT_CANCELLED"].map(s => <button key={s} disabled={b.status === s} className="border border-terra px-3 py-2 font-sans text-[10px] font-extrabold uppercase tracking-[.08em] text-terra disabled:bg-terra disabled:text-white">{label(s)}</button>)}</div></article>)}</div></div>
+    </section>
+    <section className="mt-10 border border-cardborder bg-white p-6"><h2 className="mt-0 text-3xl">Behavior checks</h2><div className="grid gap-4 md:grid-cols-2"><div><h3>Conflict behavior</h3><p className="text-muted">PENDING, SCHEDULED, and effective ACTIVE stays block overlapping cabin dates plus the 8-hour cleaning buffer. Both cancellation states and COMPLETED do not.</p></div><div><h3>Authorization boundaries</h3><p className="text-muted">Customer APIs filter by the verified Google session email. Admin APIs require the server-side allowlist. Anonymous requests are rejected.</p></div></div></section>
+  </main></Layout>;
+}

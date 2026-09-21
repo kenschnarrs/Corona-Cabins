@@ -11,7 +11,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!status || !Object.values(BookingStatus).includes(status)) return res.status(400).json({ error: "Invalid status." });
   const current = await prisma.inquiry.findUnique({ where: { id: String(req.query.id) }, include: { cabins: true } });
   if (!current) return res.status(404).json({ error: "Booking request not found." });
-  if (status === "CONFIRMED") {
+  const managementAllowed: BookingStatus[] = ["PENDING", "SCHEDULED", "MANAGEMENT_CANCELLED"];
+  if (!managementAllowed.includes(status)) return res.status(400).json({ error: "Management may set pending, scheduled, or management cancelled." });
+  if (status === "SCHEDULED") {
     for (const item of current.cabins) {
       const conflicts = await findBookingConflicts(prisma, [item.cabinId], item.startDate, item.endDate, current.id);
       if (conflicts.length) return res.status(409).json({ error: `${conflicts[0].cabinName} is no longer available.` });

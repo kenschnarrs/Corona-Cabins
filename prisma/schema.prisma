@@ -12,9 +12,11 @@ datasource db {
 
 enum BookingStatus {
   PENDING
-  CONFIRMED
-  DECLINED
-  CANCELLED
+  SCHEDULED
+  CUSTOMER_CANCELLED
+  MANAGEMENT_CANCELLED
+  ACTIVE
+  COMPLETED
 }
 
 enum PictureType {
