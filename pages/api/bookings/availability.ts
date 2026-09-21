@@ -16,6 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const conflicts = await findBookingConflicts(prisma, cabinIds, startDate, endDate);
     return res.json({ available: conflicts.length === 0, conflicts });
   } catch (error) {
-    return res.status(400).json({ error: error instanceof Error ? error.message : "Invalid booking dates." });
+    if (error instanceof Error && ["Choose valid arrival and departure dates.", "Departure must be after arrival.", "Arrival cannot be in the past.", "Dates must be within the next two years."].includes(error.message)) return res.status(400).json({ error: error.message });
+    console.error("Availability check failed", error);
+    return res.status(500).json({ error: "Availability is temporarily unavailable. Please try again." });
   }
 }

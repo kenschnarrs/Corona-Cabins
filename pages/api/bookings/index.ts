@@ -43,6 +43,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(201).json({ ok: true, requestId: result.id });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return res.status(409).json({ error: "Availability changed while you submitted. Please check the dates again." });
-    throw error;
+    if (error instanceof Error && ["Choose valid arrival and departure dates.", "Departure must be after arrival.", "Arrival cannot be in the past.", "Dates must be within the next two years."].includes(error.message)) return res.status(400).json({ error: error.message });
+    console.error("Booking request failed", error);
+    return res.status(500).json({ error: "Booking requests are temporarily unavailable. Please try again." });
   }
 }
