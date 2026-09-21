@@ -13,9 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!current) return res.status(404).json({ error: "Booking request not found." });
   if (status === "CONFIRMED") {
     for (const item of current.cabins) {
-      const conflicts = await findBookingConflicts(prisma, [item.cabinId], item.startDate, item.endDate);
-      const other = conflicts.filter((c) => c.cabinId !== item.cabinId || current.status === "CANCELLED" || current.status === "DECLINED");
-      if (other.length) return res.status(409).json({ error: `${other[0].cabinName} is no longer available.` });
+      const conflicts = await findBookingConflicts(prisma, [item.cabinId], item.startDate, item.endDate, current.id);
+      if (conflicts.length) return res.status(409).json({ error: `${conflicts[0].cabinName} is no longer available.` });
     }
   }
   const booking = await prisma.inquiry.update({ where: { id: current.id }, data: { status } });

@@ -33,7 +33,8 @@ export async function findBookingConflicts(
   db: Pick<PrismaClient, "cabinInquiry">,
   cabinIds: string[],
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  excludeInquiryId?: string
 ): Promise<BookingConflict[]> {
   const bufferMs = CLEANING_BUFFER_HOURS * 60 * 60 * 1000;
   const bufferedStart = new Date(startDate.getTime() - bufferMs);
@@ -41,7 +42,7 @@ export async function findBookingConflicts(
   const rows = await db.cabinInquiry.findMany({
     where: {
       cabinId: { in: cabinIds },
-      inquiry: { status: { in: ["PENDING", "CONFIRMED"] } },
+      inquiry: { status: { in: ["PENDING", "CONFIRMED"] }, ...(excludeInquiryId ? { inquiryId: { not: excludeInquiryId } } : {}) },
       startDate: { lt: bufferedEnd },
       endDate: { gt: bufferedStart },
     },
