@@ -29,6 +29,30 @@ export function parseStayDates(start: unknown, end: unknown) {
   return { startDate, endDate };
 }
 
+export type ConflictWhere = {
+  cabinId: { in: string[] };
+  inquiryId?: { not: string };
+  inquiry: { status: { in: StoredBookingStatus[] } };
+  startDate: { lt: Date };
+  endDate: { gt: Date };
+};
+
+/**
+ * Overlap window for one cabin stay, including the cleaning buffer.
+ * The booking being confirmed/examined is excluded on the CabinInquiry row
+ * itself (inquiryId lives there, not on the Inquiry relation filter).
+ */
+export function bookingConflictWhere(cabinIds: string[], startDate: Date, endDate: Date, excludeInquiryId?: string): ConflictWhere {
+  const bufferMs = CLEANING_BUFFER_HOURS * 60 * 60 * 1000;
+  return {
+    cabinId: { in: cabinIds },
+    ...(excludeInquiryId ? { inquiryId: { not: excludeInquiryId } } : {}),
+    inquiry: { status: { in: ["PENDING", "SCHEDULED", "ACTIVE"] } },
+    startDate: { lt: new Date(endDate.getTime() + bufferMs) },
+    endDate: { gt: new Date(startDate.getTime() - bufferMs) },
+  };
+}
+
 export async function findBookingConflicts(
   db: Pick<PrismaClient, "cabinInquiry">,
   cabinIds: string[],
@@ -36,16 +60,8 @@ export async function findBookingConflicts(
   endDate: Date,
   excludeInquiryId?: string
 ): Promise<BookingConflict[]> {
-  const bufferMs = CLEANING_BUFFER_HOURS * 60 * 60 * 1000;
-  const bufferedStart = new Date(startDate.getTime() - bufferMs);
-  const bufferedEnd = new Date(endDate.getTime() + bufferMs);
   const rows = await db.cabinInquiry.findMany({
-    where: {
-      cabinId: { in: cabinIds },
-      inquiry: { status: { in: ["PENDING", "SCHEDULED", "ACTIVE"] }, ...(excludeInquiryId ? { inquiryId: { not: excludeInquiryId } } : {}) },
-      startDate: { lt: bufferedEnd },
-      endDate: { gt: bufferedStart },
-    },
+    where: bookingConflictWhere(cabinIds, startDate, endDate, excludeInquiryId),
     include: { cabin: { select: { name: true } } },
     orderBy: { startDate: "asc" },
   });
@@ -71,4 +87,23 @@ export function effectiveBookingStatus(status: StoredBookingStatus, startDate: D
   if ((status === "SCHEDULED" || status === "ACTIVE" || status === "COMPLETED") && endDate && now >= endDate) return "COMPLETED";
   if (status === "SCHEDULED" && now >= startDate) return "ACTIVE";
   return status;
+}
+
+export const MANAGEMENT_TARGET_STATUSES: StoredBookingStatus[] = ["PENDING", "SCHEDULED", "MANAGEMENT_CANCELLED"];
+
+/**
+ * Ken's lifecycle: management may reactivate a cancelled request to PENDING or
+ * SCHEDULED (the caller must then re-run the conflict check, since the freed
+ * dates may have been booked since), but a stay that already started is over
+ * the line for management edits. Callers pass the EFFECTIVE status: ACTIVE and
+ * COMPLETED are time-derived and never stored.
+ */
+export function isCancelledStatus(status: StoredBookingStatus): boolean {
+  return status === "CUSTOMER_CANCELLED" || status === "MANAGEMENT_CANCELLED";
+}
+
+export function managementTransitionError(current: StoredBookingStatus, target: StoredBookingStatus): string | null {
+  if (current === "ACTIVE" || current === "COMPLETED") return "A stay that has already started can no longer be changed.";
+  if (isCancelledStatus(current) && target === "MANAGEMENT_CANCELLED") return "This booking request is already cancelled.";
+  return null;
 }
