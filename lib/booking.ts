@@ -42,7 +42,7 @@ export async function findBookingConflicts(
   const rows = await db.cabinInquiry.findMany({
     where: {
       cabinId: { in: cabinIds },
-      inquiry: { status: { in: ["PENDING", "CONFIRMED"] }, ...(excludeInquiryId ? { inquiryId: { not: excludeInquiryId } } : {}) },
+      inquiry: { status: { in: ["PENDING", "SCHEDULED", "ACTIVE"] }, ...(excludeInquiryId ? { inquiryId: { not: excludeInquiryId } } : {}) },
       startDate: { lt: bufferedEnd },
       endDate: { gt: bufferedStart },
     },
@@ -60,4 +60,15 @@ export async function findBookingConflicts(
       unavailableUntil: row.endDate.toISOString().slice(0, 10),
     }];
   });
+}
+
+
+export type StoredBookingStatus = "PENDING" | "SCHEDULED" | "CUSTOMER_CANCELLED" | "MANAGEMENT_CANCELLED" | "ACTIVE" | "COMPLETED";
+
+/** ACTIVE is displayed from real time; no scheduler or background mutation is needed. */
+export function effectiveBookingStatus(status: StoredBookingStatus, startDate: Date, endDate?: Date, now = new Date()): StoredBookingStatus {
+  if (status === "CUSTOMER_CANCELLED" || status === "MANAGEMENT_CANCELLED") return status;
+  if ((status === "SCHEDULED" || status === "ACTIVE" || status === "COMPLETED") && endDate && now >= endDate) return "COMPLETED";
+  if (status === "SCHEDULED" && now >= startDate) return "ACTIVE";
+  return status;
 }

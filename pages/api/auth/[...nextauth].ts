@@ -19,9 +19,10 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    // Sign-in is restricted to allowlisted admin emails, enforced server-side.
-    async signIn({ user }) {
-      return isAdminEmail(user.email);
+    // Any verified Google user may sign in as a customer. Admin privileges are
+    // still derived only from the server-side allowlist.
+    async signIn({ account, profile }) {
+      return account?.provider === "google" && (profile as { email_verified?: boolean } | undefined)?.email_verified === true;
     },
     async session({ session }) {
       if (session.user) {
