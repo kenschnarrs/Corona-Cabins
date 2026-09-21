@@ -1,0 +1,58 @@
+name: Booking integration gate
+
+# Pre-deploy release gate: exercises the real Next server, Postgres schema,
+# and NextAuth session handling on a throwaway database. Production is never
+# touched; Google sign-in is replaced by locally minted session tokens.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  booking-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: cabins
+          POSTGRES_PASSWORD: cabins
+          POSTGRES_DB: cabins_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cabins"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      POSTGRES_PRISMA_URL: postgresql://cabins:cabins@localhost:5432/cabins_test
+      POSTGRES_URL_NON_POOLING: postgresql://cabins:cabins@localhost:5432/cabins_test
+      NEXTAUTH_SECRET: integration-test-secret
+      NEXTAUTH_URL: http://localhost:3000
+      ADMIN_EMAIL_ALLOWLIST: admin.test@example.test
+      GOOGLE_ID: integration-dummy
+      GOOGLE_SECRET: integration-dummy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npx prisma migrate deploy
+      - run: npm run seed
+      - run: npm run build
+      - name: Start the production build
+        run: |
+          nohup npm run start > server.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null http://localhost:3000/api/bookings/availability -X POST -H 'Content-Type: application/json' -d '{"cabinIds":["warmup"],"startDate":"2027-01-01","endDate":"2027-01-02"}' || curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/ | grep -q 200; then
+              echo "server is up"; exit 0
+            fi
+            sleep 2
+          done
+          echo "server did not start"; cat server.log; exit 1
+      - run: node scripts/integration-booking.mjs

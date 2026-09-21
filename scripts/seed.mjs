@@ -23,6 +23,13 @@ async function seed() {
           La cocina  tiene microondas, estufa, refrigerador, calentador de agua, platos, tazas, sartenes, y cuchillos.
           Hay un calentón de leña.
           Todas de las cabañas tienen accesso a los asadores, la àrea infantil, el estacionamiento privado.`,
+          description_es: `
+          El baño tiene elementos básicos, toallas, jabón, y papel higiénico.
+          Hay una terraza pequeña.
+          La cocina  tiene microondas, estufa, refrigerador, calentador de agua, platos, tazas, sartenes, y cuchillos.
+          Hay un calentón de leña.
+          Todas de las cabañas tienen accesso a los asadores, la àrea infantil, el estacionamiento privado`,
+          description_en: "The bathroom has the basics: towels, soap, and toilet paper. There is a small terrace. The kitchen has a microwave, stove, refrigerator, water heater, dishes, cups, pans, and knives. There is a wood-burning stove. All cabins have access to the grills, playground, and private parking.",
         },
         {
           name: 'Cabaña Mediana',
@@ -40,6 +47,12 @@ async function seed() {
           La cocina tiene utensilios de cocina, los básicos, platos, vasos, tazas, sartenes, comal, refrigerador, y microondas.
           Hay un calentón de leña.
           Todas de las cabañas tienen accesso a los asadores, la àrea infantil, el estacionamiento privado.`,
+          description_es: `
+          El baño tiene elementos básicos, toallas, jabón, y papel higiénico.
+          La cocina tiene utensilios de cocina, los básicos, platos, vasos, tazas, sartenes, comal, refrigerador, y microondas.
+          Hay un calentón de leña.
+          Todas de las cabañas tienen accesso a los asadores, la àrea infantil, el estacionamiento privado`,
+          description_en: "The bathroom has the basics: towels, soap, and toilet paper. The kitchen has cookware and the basics: plates, glasses, cups, pans, a griddle, refrigerator, and microwave. There is a wood-burning stove. All cabins have access to the grills, playground, and private parking.",
         },
         {
           name: 'Cabaña Pequeña',
@@ -58,6 +71,13 @@ async function seed() {
           La cocina tiene elementos básicos, comal, sartenes, platos, refrigerador, y microondas.
           Hay un calentón de leña.
           Todas de las cabañas tienen accesso a los asadores, la àrea infantil, el estacionamiento privado.`,
+          description_es: `
+          El baño tiene elementos básicos, toallas, jabón, y papel higiénico.
+          Hay una terraza pequeña.
+          La cocina tiene elementos básicos, comal, sartenes, platos, refrigerador, y microondas.
+          Hay un calentón de leña.
+          Todas de las cabañas tienen accesso a los asadores, la àrea infantil, el estacionamiento privado`,
+          description_en: "The bathroom has the basics: towels, soap, and toilet paper. There is a small terrace. The kitchen has a griddle, pans, plates, refrigerator, and microwave. There is a wood-burning stove. All cabins have access to the grills, playground, and private parking.",
         },
       ],
     });

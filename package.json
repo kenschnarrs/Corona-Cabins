@@ -11,7 +11,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
-    "test": "node scripts/check-i18n.mjs && node scripts/check-rich-text.mjs && node scripts/check-booking.mjs"
+    "test": "node scripts/check-i18n.mjs && node scripts/check-rich-text.mjs && node scripts/check-booking.mjs",
+    "test:integration": "node scripts/integration-booking.mjs"
   },
   "keywords": [
     "cabins",

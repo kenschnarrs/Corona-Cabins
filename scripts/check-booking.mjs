@@ -29,3 +29,39 @@ assert.match(review, /VERCEL_ENV === "production".*notFound/);
 for (const state of ["PENDING", "SCHEDULED", "CUSTOMER_CANCELLED", "MANAGEMENT_CANCELLED", "ACTIVE", "COMPLETED"]) assert.match(review, new RegExp(state));
 assert.match(customerList, /customer_email: auth\.email/);
 assert.match(adminList, /requireAdmin/);
+
+// Regression gate for the PR #5 management-confirm 500 and lifecycle rules.
+const bookingLib = fs.readFileSync("lib/booking.ts", "utf8");
+const adminId = fs.readFileSync("pages/api/admin/bookings/[id].ts", "utf8");
+assert.match(bookingLib, /export function bookingConflictWhere/);
+const flatBookingLib = bookingLib.split(String.fromCharCode(10)).join(" ");
+assert.ok(!/inquiry: \{ status:[^;]*inquiryId/.test(flatBookingLib), "self-exclusion must not nest inquiryId inside the inquiry relation filter");
+assert.match(bookingLib, /inquiryId: \{ not: excludeInquiryId \}/);
+assert.match(bookingLib, /export function managementTransitionError/);
+assert.match(bookingLib, /final and cannot be changed/);
+assert.match(adminId, /managementTransitionError\(current\.status\)/);
+assert.match(adminId, /MANAGEMENT_TARGET_STATUSES/);
+const inquiriesUi = fs.readFileSync("pages/inquiries.tsx", "utf8");
+assert.match(inquiriesUi, /\["PENDING","SCHEDULED"\]\.includes\(booking\.status\)/);
+
+// Executable check: the conflict filter shape and transition guard actually behave.
+import { execFileSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
+execFileSync("npx", ["tsc", "lib/booking.ts", "--outDir", ".test-build", "--module", "commonjs", "--target", "es2020", "--moduleResolution", "node", "--skipLibCheck"], { stdio: "inherit" });
+const { findBookingConflicts, managementTransitionError } = await import(pathToFileURL(`${process.cwd()}/.test-build/booking.js`).href);
+let captured;
+const mockDb = { cabinInquiry: { findMany: async (args) => { captured = args; return []; } } };
+await findBookingConflicts(mockDb, ["cabin-1"], new Date("2026-10-09T13:00:00.000Z"), new Date("2026-10-11T12:00:00.000Z"), "self-id");
+assert.equal(captured.where.inquiryId.not, "self-id", "self-exclusion applies on the CabinInquiry row");
+assert.deepEqual(captured.where.inquiry, { status: { in: ["PENDING", "SCHEDULED", "ACTIVE"] } }, "status filter untouched and free of inquiryId");
+assert.equal(captured.where.startDate.lt.toISOString(), "2026-10-11T20:00:00.000Z", "checkout plus 8h buffer");
+assert.equal(captured.where.endDate.gt.toISOString(), "2026-10-09T05:00:00.000Z", "check-in minus 8h buffer");
+await findBookingConflicts(mockDb, ["cabin-1"], new Date("2026-10-09T13:00:00.000Z"), new Date("2026-10-11T12:00:00.000Z"));
+assert.ok(!("inquiryId" in captured.where), "no self-exclusion without an id");
+assert.match(managementTransitionError("CUSTOMER_CANCELLED"), /final/);
+assert.match(managementTransitionError("MANAGEMENT_CANCELLED"), /final/);
+assert.match(managementTransitionError("ACTIVE"), /already started/);
+assert.equal(managementTransitionError("PENDING"), null);
+assert.equal(managementTransitionError("SCHEDULED"), null);
+fs.rmSync(".test-build", { recursive: true, force: true });
+console.log("conflict-filter and transition-guard checks passed");
