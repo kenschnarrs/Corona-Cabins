@@ -1,0 +1,15 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+const schema = fs.readFileSync("prisma/schema.prisma", "utf8");
+const api = fs.readFileSync("pages/api/bookings/index.ts", "utf8");
+const booking = fs.readFileSync("lib/booking.ts", "utf8");
+const ui = fs.readFileSync("components/BookingFlow.tsx", "utf8");
+assert.match(schema, /enum BookingStatus/);
+assert.match(schema, /@@index\(\[cabinId, startDate, endDate\]\)/);
+assert.match(booking, /CLEANING_BUFFER_HOURS = 8/);
+assert.match(booking, /PENDING", "CONFIRMED/);
+assert.match(api, /Serializable/);
+assert.match(api, /status\(409\)/);
+assert.match(ui, /conflicts\.map/);
+assert.match(ui, /Edit booking|b\.edit/);
+console.log("booking-flow checks passed");

@@ -4,6 +4,7 @@ import Layout from "../components/Layout";
 import Hero from "../components/Hero";
 import CabinsSection from "../components/CabinsSection";
 import ExperienceSection from "../components/ExperienceSection";
+import BookingFlow from "../components/BookingFlow";
 import Seo from "../components/Seo";
 import { getCabins } from "../lib/cabins";
 import type { CabinProps } from "../lib/types";
@@ -26,6 +27,7 @@ const HomePage: React.FC<HomePageProps> = ({ cabins }) => {
       <main>
         <Hero />
         <CabinsSection cabins={cabins} />
+        <BookingFlow cabins={cabins} />
         <ExperienceSection />
       </main>
     </Layout>

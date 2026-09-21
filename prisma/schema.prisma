@@ -10,6 +10,13 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+  CANCELLED
+}
+
 enum PictureType {
   Primary
   LivingRoom
@@ -25,10 +32,19 @@ enum PictureType {
 }
 
 model Inquiry {
-  id        String     @default(cuid()) @id
-  cabins    CabinInquiry[]
-  customer  User?      @relation(fields: [customerId], references: [id])
-  customerId String?
+  id             String          @default(cuid()) @id
+  status         BookingStatus   @default(PENDING)
+  customer_name  String
+  customer_email String
+  customer_phone String
+  notes          String          @db.Text
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  cabins         CabinInquiry[]
+  customer       User?           @relation(fields: [customerId], references: [id])
+  customerId     String?
+
+  @@index([status, created_at])
 }
 
 model CabinInquiry {
@@ -43,6 +59,7 @@ model CabinInquiry {
   body      String @db.Text
 
   @@id([cabinId, inquiryId])
+  @@index([cabinId, startDate, endDate])
 }
 
 model Cabin {

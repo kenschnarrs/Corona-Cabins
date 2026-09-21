@@ -4,18 +4,18 @@
   "description": "A website for the Corona family's cabins in rural Mexico.",
   "scripts": {
     "dev": "next",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "seed": "node scripts/seed.mjs",
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
-    "test": "node scripts/check-i18n.mjs && node scripts/check-rich-text.mjs"
+    "test": "node scripts/check-i18n.mjs && node scripts/check-rich-text.mjs && node scripts/check-booking.mjs"
   },
   "keywords": [
     "cabins",
-    "cabañas",
+    "caba\u00f1as",
     "corona",
     "mexico"
   ],
