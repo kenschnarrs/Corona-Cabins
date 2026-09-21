@@ -110,10 +110,22 @@ r = await api(`/api/admin/bookings/${b3}`, { method: "PATCH", email: ADMIN, body
 check("management cannot set the customer-cancelled state", r.status === 400, r.status);
 r = await api(`/api/admin/bookings/${b3}`, { method: "PATCH", email: ADMIN, body: { status: "MANAGEMENT_CANCELLED" } });
 check("management cancels the request", r.status === 200 && r.data.status === "MANAGEMENT_CANCELLED", r);
+r = await api(`/api/admin/bookings/${b3}`, { method: "PATCH", email: ADMIN, body: { status: "MANAGEMENT_CANCELLED" } });
+check("already-cancelled request cannot be cancelled again by management", r.status === 409, r.status);
+// Ken's rule: management MAY reactivate a cancelled request, but only when the dates still pass the conflict check.
+// b3 overlaps b2's scheduled stay, so both reactivation targets must be refused.
 r = await api(`/api/admin/bookings/${b3}`, { method: "PATCH", email: ADMIN, body: { status: "SCHEDULED" } });
-check("management-cancelled request is final", r.status === 409, r.status);
+check("reactivation to scheduled refused when dates are now booked", r.status === 409, r.status);
+r = await api(`/api/admin/bookings/${b3}`, { method: "PATCH", email: ADMIN, body: { status: "PENDING" } });
+check("reactivation to pending refused when dates are now booked", r.status === 409, r.status);
+// b1 (customer-cancelled) still has free dates, so reactivation succeeds there.
 r = await api(`/api/admin/bookings/${b1}`, { method: "PATCH", email: ADMIN, body: { status: "PENDING" } });
-check("customer-cancelled request cannot be reactivated", r.status === 409, r.status);
+check("management reactivates a customer-cancelled request when dates are free", r.status === 200 && r.data.status === "PENDING", r);
+r = await api(`/api/admin/bookings/${b1}`, { method: "PATCH", email: ADMIN, body: { status: "SCHEDULED" } });
+check("reactivated request confirms when dates are free", r.status === 200 && r.data.status === "SCHEDULED", r);
+// Customers have no reactivation path at all.
+r = await api(`/api/customer/bookings/${b3}`, { method: "PATCH", email: CUSTOMER, body: { action: "reactivate" } });
+check("customer cannot reactivate a cancelled booking", r.status === 400, r.status);
 
 // ---- Time-derived ACTIVE / COMPLETED states (direct fixtures: the public API rejects past arrivals) ----
 const past = new Date(Date.now() - 86400000 * 10);
@@ -129,6 +141,8 @@ check("past scheduled stay derives COMPLETED", completed?.effective_status === "
 check("ongoing scheduled stay derives ACTIVE", active?.effective_status === "ACTIVE", active?.effective_status);
 r = await api(`/api/customer/bookings/${activeRow.id}`, { method: "PATCH", email: CUSTOMER, body: { action: "cancel" } });
 check("customer cannot cancel an active stay", r.status === 409, r.status);
+r = await api(`/api/admin/bookings/${activeRow.id}`, { method: "PATCH", email: ADMIN, body: { status: "SCHEDULED" } });
+check("management cannot edit a stay that already started", r.status === 409, r.status);
 
 await prisma.$disconnect();
 console.log("\nbooking integration suite passed");

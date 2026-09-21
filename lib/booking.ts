@@ -92,13 +92,18 @@ export function effectiveBookingStatus(status: StoredBookingStatus, startDate: D
 export const MANAGEMENT_TARGET_STATUSES: StoredBookingStatus[] = ["PENDING", "SCHEDULED", "MANAGEMENT_CANCELLED"];
 
 /**
- * Ken's lifecycle: a cancellation (by customer or management) is final, and a
- * stay that already started is over the line for management edits. ACTIVE and
- * COMPLETED are time-derived and never stored, so the second branch is a
- * defensive guard only.
+ * Ken's lifecycle: management may reactivate a cancelled request to PENDING or
+ * SCHEDULED (the caller must then re-run the conflict check, since the freed
+ * dates may have been booked since), but a stay that already started is over
+ * the line for management edits. Callers pass the EFFECTIVE status: ACTIVE and
+ * COMPLETED are time-derived and never stored.
  */
-export function managementTransitionError(current: StoredBookingStatus): string | null {
-  if (current === "CUSTOMER_CANCELLED" || current === "MANAGEMENT_CANCELLED") return "Cancelled booking requests are final and cannot be changed.";
+export function isCancelledStatus(status: StoredBookingStatus): boolean {
+  return status === "CUSTOMER_CANCELLED" || status === "MANAGEMENT_CANCELLED";
+}
+
+export function managementTransitionError(current: StoredBookingStatus, target: StoredBookingStatus): string | null {
   if (current === "ACTIVE" || current === "COMPLETED") return "A stay that has already started can no longer be changed.";
+  if (isCancelledStatus(current) && target === "MANAGEMENT_CANCELLED") return "This booking request is already cancelled.";
   return null;
 }
