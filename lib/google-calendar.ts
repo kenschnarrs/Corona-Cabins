@@ -56,6 +56,7 @@ type TokenResponse = {
   refresh_token?: string;
   expires_in?: number;
   id_token?: string;
+  scope?: string;
   error?: string;
   error_description?: string;
 };
@@ -94,6 +95,10 @@ export async function exchangeCalendarCode(code: string, redirectUri: string) {
     refreshToken: data.refresh_token,
     accessTokenExpiresAt: new Date(Date.now() + (data.expires_in ?? 3600) * 1000),
     connectedEmail: decodeIdTokenEmail(data.id_token),
+    // Google lists the scopes the admin actually granted here. With granular
+    // consent the calendar box can be left unchecked, and then every event
+    // write fails with a bare 403 - catch it at connect time instead.
+    grantedScope: data.scope ?? "",
   };
 }
 
@@ -177,6 +182,20 @@ function buildEventBody(inquiry: InquiryForEvent, stay: StayForEvent) {
 
 export type CalendarSyncOutcome = "synced" | "removed" | "not-connected" | "failed";
 
+/** Google's JSON error body carries the reason a bare status code hides
+ * (e.g. accessNotConfigured when the Calendar API is off for the project). */
+function googleErrorDetail(data: unknown): string {
+  const error = (data as { error?: { message?: string; errors?: { reason?: string }[] } } | null)?.error;
+  if (!error) return "";
+  const reason = error.errors?.[0]?.reason;
+  return [reason, error.message].filter(Boolean).join(": ");
+}
+
+function googleFailure(action: string, result: { status: number; data: unknown }): Error {
+  const detail = googleErrorDetail(result.data);
+  return new Error(`${action} failed (${result.status}${detail ? ` ${detail}` : ""}).`);
+}
+
 async function syncConfirmedBooking(inquiryId: string): Promise<CalendarSyncOutcome> {
   const auth = await getFreshAccessToken();
   if (!auth) return "not-connected";
@@ -200,13 +219,13 @@ async function syncConfirmedBooking(inquiryId: string): Promise<CalendarSyncOutc
       } else if (updated.status >= 200 && updated.status < 300) {
         continue;
       } else {
-        throw new Error(`Google event update failed (${updated.status}).`);
+        throw googleFailure("Google event update", updated);
       }
     }
     const created = await calendarFetch(`/calendars/${calendarId}/events`, token, { method: "POST", body });
     const eventId = created.data && typeof created.data.id === "string" ? created.data.id : null;
     if (created.status < 200 || created.status >= 300 || !eventId) {
-      throw new Error(`Google event create failed (${created.status}).`);
+      throw googleFailure("Google event create", created);
     }
     await prisma.bookingCalendarEvent.upsert({
       where: { inquiryId_cabinId: { inquiryId, cabinId: stay.cabinId } },
@@ -235,7 +254,7 @@ async function removeBookingEvents(inquiryId: string): Promise<CalendarSyncOutco
       { method: "DELETE" }
     );
     if (removed.status !== 204 && removed.status !== 404 && removed.status !== 410) {
-      throw new Error(`Google event delete failed (${removed.status}).`);
+      throw googleFailure("Google event delete", removed);
     }
   }
   await prisma.bookingCalendarEvent.deleteMany({ where: { inquiryId } });
