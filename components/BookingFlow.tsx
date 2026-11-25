@@ -1,4 +1,5 @@
-import React, { FormEvent, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import { signIn, useSession } from "next-auth/react";
 import type { CabinProps } from "../lib/types";
 import { cabinCopy, useLanguage } from "../lib/i18n";
@@ -10,6 +11,7 @@ type Props = { cabins: CabinProps[] };
 export default function BookingFlow({ cabins }: Props) {
   const { t } = useLanguage();
   const { data: session, status: sessionStatus } = useSession();
+  const router = useRouter();
   const b = t.booking;
   const [selected, setSelected] = useState<string[]>([]);
   const [startDate, setStartDate] = useState("");
@@ -25,6 +27,15 @@ export default function BookingFlow({ cabins }: Props) {
   const nights = useMemo(() => startDate && endDate ? Math.max(0, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000)) : 0, [startDate, endDate]);
   const total = cabins.filter((c) => selected.includes(c.id)).reduce((sum, c) => sum + Number(c.price_per_night) * nights, 0);
 
+  // A cabin detail page links here as /?cabin=<id>#booking: preselect that
+  // cabin while keeping the other cabins selectable for the same request.
+  useEffect(() => {
+    const cabin = router.query.cabin;
+    if (typeof cabin === "string" && cabins.some((c) => c.id === cabin)) {
+      setSelected((ids) => (ids.includes(cabin) ? ids : [...ids, cabin]));
+    }
+  }, [router.query.cabin, cabins]);
+
   const editRequest = () => { setStatus("idle"); setMessage(""); setConflicts([]); };
   const toggleCabin = (id: string) => { setSelected((ids) => ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]); editRequest(); };
 
@@ -39,7 +50,7 @@ export default function BookingFlow({ cabins }: Props) {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!session?.user?.email) { await signIn("google", { callbackUrl: "/#booking" }); return; }
+    if (!session?.user?.email) { await signIn("google", { callbackUrl: `${router.asPath.split("#")[0]}#booking` }); return; }
     if (status !== "available") return checkAvailability();
     setStatus("submitting");
     const response = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cabinIds: selected, startDate, endDate, customerName, customerEmail, customerPhone, notes, website: "" }) });

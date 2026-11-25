@@ -77,6 +77,8 @@
     "tempPhoto": "Foto temporal",
     "descriptionHeading": "Descripción",
     "amenitiesHeading": "Servicios",
+    "reserve": "Reservar esta cabaña",
+    "reserveNote": "Inicia la solicitud con esta cabaña elegida. Puedes agregar más cabañas antes de enviar.",
     "notFound": "No encontramos esta cabaña."
   },
   "inquiries": {
