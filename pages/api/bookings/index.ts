@@ -50,6 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (result.kind === "conflict") return res.status(409).json({ error: "The requested stay is no longer available.", code: "STAY_UNAVAILABLE", conflicts: result.conflicts });
     if (result.kind === "error") return res.status(400).json({ error: result.error, code: result.code });
     await sendBookingReceivedEmails({
+      inquiryId: result.id,
       customerName,
       customerEmail,
       customerPhone,

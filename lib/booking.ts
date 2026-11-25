@@ -4,6 +4,9 @@ export const CLEANING_BUFFER_HOURS = 8;
 export const CHECK_IN_HOUR = 13;
 export const CHECK_OUT_HOUR = 12;
 
+/** Stored statuses that hold a cabin's dates (ACTIVE is time-derived, kept for safety). */
+export const BLOCKING_STATUSES: StoredBookingStatus[] = ["PENDING", "SCHEDULED", "ACTIVE"];
+
 export type BookingConflict = {
   cabinId: string;
   cabinName: string;
@@ -69,7 +72,7 @@ export function bookingConflictWhere(cabinIds: string[], startDate: Date, endDat
   return {
     cabinId: { in: cabinIds },
     ...(excludeInquiryId ? { inquiryId: { not: excludeInquiryId } } : {}),
-    inquiry: { status: { in: ["PENDING", "SCHEDULED", "ACTIVE"] } },
+    inquiry: { status: { in: BLOCKING_STATUSES } },
     startDate: { lt: new Date(endDate.getTime() + bufferMs) },
     endDate: { gt: new Date(startDate.getTime() - bufferMs) },
   };

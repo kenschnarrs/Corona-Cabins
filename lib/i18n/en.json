@@ -293,7 +293,58 @@
       "LEGACY_IMAGE": "This legacy image is not managed by Blob and cannot be deleted here.",
       "DELETE_CLEANUP_FAILED": "Blob was deleted, but database cleanup failed. Contact support before retrying.",
       "IMAGE_ORDER_INVALID": "Image order must include every cabin image exactly once.",
-      "CALENDAR_SCOPE_MISSING": "Google did not grant calendar access. Reconnect and keep the calendar permission checked."
+      "CALENDAR_SCOPE_MISSING": "Google did not grant calendar access. Reconnect and keep the calendar permission checked.",
+      "CONFIRM_LINK_INVALID": "This approval link is not valid. Use the booking requests dashboard.",
+      "CONFIRM_LINK_EXPIRED": "This approval link has expired. Use the booking requests dashboard.",
+      "BOOKING_NOT_PENDING": "This request is no longer pending, so it cannot be approved from email. Open the dashboard."
+    },
+    "confirmEmail": {
+      "seoTitle": "Approve request | Cabañas Corona",
+      "eyebrow": "Approve from email",
+      "heading": "Approve booking request",
+      "intro": "Check the details and press Confirm. The guest is emailed and the booking is added to the calendar.",
+      "request": "Request",
+      "guest": "Guest",
+      "stays": "Stays",
+      "status": "Status",
+      "confirm": "Confirm booking",
+      "confirming": "Confirming...",
+      "done": "Booking confirmed. The guest will get an email.",
+      "alreadyDone": "This booking was already confirmed.",
+      "dashboard": "Open the booking requests dashboard",
+      "loading": "Loading request...",
+      "loadError": "We could not load the request. Please try again.",
+      "confirmError": "The booking could not be confirmed.",
+      "noToken": "The approval link is missing. Use the button in the alert email."
     }
+  },
+  "availability": {
+    "heading": "Availability",
+    "intro": "Tap your arrival day, then your departure day. Crossed-out days are already booked.",
+    "legendFree": "Available",
+    "legendBooked": "Booked",
+    "legendSelected": "Your stay",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "hintAll": "Showing days when every cabin is booked. Choose a cabin to see its dates.",
+    "hintSelected": "Showing days when any of your chosen cabins is booked.",
+    "pickDeparture": "Now pick your departure day.",
+    "rangeBlocked": "Those dates include a booked day. Please pick different dates.",
+    "loading": "Loading availability...",
+    "loadError": "We could not load the calendar. You can still pick dates below and check availability."
+  },
+  "gallery": {
+    "heading": "Photos",
+    "openPhoto": "Open photo {n} of {total}",
+    "close": "Close",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "counter": "{n} of {total}"
+  },
+  "whatsapp": {
+    "cta": "Message us on WhatsApp",
+    "hint": "Questions about your request? Chat with us directly.",
+    "messageWithNumber": "Hello! I just sent booking request #{number} on the Cabañas Corona site.",
+    "messageGeneric": "Hello! I have a question about a booking at Cabañas Corona."
   }
 }

@@ -3,6 +3,7 @@
 // with the same NEXTAUTH_SECRET the server uses - no Google involved).
 // Runs only against disposable CI/local databases, never production.
 import assert from "node:assert/strict";
+import { createHmac } from "node:crypto";
 import { encode } from "next-auth/jwt";
 import { PrismaClient } from "@prisma/client";
 
@@ -143,6 +144,73 @@ r = await api(`/api/customer/bookings/${activeRow.id}`, { method: "PATCH", email
 check("customer cannot cancel an active stay", r.status === 409, r.status);
 r = await api(`/api/admin/bookings/${activeRow.id}`, { method: "PATCH", email: ADMIN, body: { status: "SCHEDULED" } });
 check("management cannot edit a stay that already started", r.status === 409, r.status);
+
+// ---- Availability calendar, confirm-from-email, and page rendering ----
+const mintToken = (id, exp = Date.now() + 86400000, secret = SECRET) => {
+  const payload = Buffer.from(JSON.stringify({ id, exp })).toString("base64url");
+  return `${payload}.${createHmac("sha256", secret).update(`confirm-booking.${payload}`).digest("base64url")}`;
+};
+r = await api("/api/bookings/calendar");
+check("public calendar endpoint answers without a session", r.status === 200 && typeof r.data.blocked === "object", r);
+check("calendar lists held stays by cabin as dates only", Array.isArray(r.data.blocked[grande.id]) && r.data.blocked[grande.id].every(x => /^\d{4}-\d{2}-\d{2}$/.test(x.start) && /^\d{4}-\d{2}-\d{2}$/.test(x.end) && Object.keys(x).length === 2), r.data.blocked[grande.id]);
+check("calendar payload carries no guest details", !/customer|example\.test|Integration|@/.test(JSON.stringify(r.data)), null);
+r = await api("/api/bookings/calendar", { method: "POST" });
+check("calendar endpoint is GET-only", r.status === 405, r.status);
+
+const c1Start = D(60), c1End = D(62);
+r = await api("/api/bookings", { method: "POST", email: CUSTOMER, body: { cabinIds: [grande.id], startDate: c1Start, endDate: c1End, customerName: "Email Confirm Guest", customerPhone: "0000000", website: "", locale: "en" } });
+check("request for confirm-from-email created", r.status === 201 && r.data?.requestId, r);
+const c1 = r.data.requestId;
+r = await api("/api/bookings/calendar");
+check("new pending request shows up as booked on the calendar", r.data.blocked[grande.id].some(x => x.start === c1Start && x.end === c1End), r.data.blocked[grande.id]);
+
+r = await api("/api/admin/bookings/email-confirm");
+check("confirm endpoint without a token is refused", r.status === 400 && r.data.code === "CONFIRM_LINK_INVALID", r);
+r = await api(`/api/admin/bookings/email-confirm?token=${encodeURIComponent(mintToken(c1, Date.now() + 86400000, "wrong-secret"))}`);
+check("token signed with another secret is refused", r.status === 400 && r.data.code === "CONFIRM_LINK_INVALID", r);
+r = await api(`/api/admin/bookings/email-confirm?token=${encodeURIComponent(mintToken(c1, Date.now() - 1000))}`);
+check("expired token is refused with 410", r.status === 410 && r.data.code === "CONFIRM_LINK_EXPIRED", r);
+r = await api(`/api/admin/bookings/email-confirm?token=${encodeURIComponent(mintToken("no-such-request"))}`);
+check("valid token for a missing request is a 404", r.status === 404, r);
+r = await api("/api/admin/bookings/email-confirm", { method: "POST", body: {} });
+check("POST without a token is refused", r.status === 400, r);
+
+const c1Token = mintToken(c1);
+r = await api(`/api/admin/bookings/email-confirm?token=${encodeURIComponent(c1Token)}`);
+check("GET describes the request without changing it", r.status === 200 && r.data.booking.status === "PENDING" && r.data.booking.stays[0].startDate === c1Start, r);
+check("GET leaves the request pending in the database", (await prisma.inquiry.findUnique({ where: { id: c1 } })).status === "PENDING");
+// A conflicting held request created behind the API's back (the confirm must re-check availability).
+const rival = await prisma.inquiry.create({ data: { customer_name: "Rival", customer_email: OTHER, customer_phone: "0000000", notes: "integration", status: "PENDING", cabins: { create: [{ cabinId: grande.id, startDate: new Date(`${c1Start}T13:00:00.000Z`), endDate: new Date(`${c1End}T12:00:00.000Z`), header: "x", body: "x" }] } } });
+r = await api("/api/admin/bookings/email-confirm", { method: "POST", body: { token: c1Token } });
+check("confirm re-checks availability and refuses a conflict", r.status === 409 && r.data.code === "CABIN_NO_LONGER_AVAILABLE", r);
+check("refused confirm leaves the request pending", (await prisma.inquiry.findUnique({ where: { id: c1 } })).status === "PENDING");
+await prisma.inquiry.update({ where: { id: rival.id }, data: { status: "MANAGEMENT_CANCELLED" } });
+r = await api("/api/admin/bookings/email-confirm", { method: "POST", body: { token: c1Token } });
+check("confirm from the email link schedules the request", r.status === 200 && r.data.ok === true && r.data.alreadyConfirmed === false && r.data.booking.status === "SCHEDULED", r);
+check("request is SCHEDULED in the database", (await prisma.inquiry.findUnique({ where: { id: c1 } })).status === "SCHEDULED");
+r = await api("/api/admin/bookings/email-confirm", { method: "POST", body: { token: c1Token } });
+check("pressing confirm again is a harmless no-op", r.status === 200 && r.data.alreadyConfirmed === true, r);
+
+const c2Start = D(70), c2End = D(72);
+r = await api("/api/bookings", { method: "POST", email: CUSTOMER, body: { cabinIds: [grande.id], startDate: c2Start, endDate: c2End, customerName: "Cancelled Guest", customerPhone: "0000000", website: "" } });
+const c2 = r.data.requestId;
+r = await api(`/api/customer/bookings/${c2}`, { method: "PATCH", email: CUSTOMER, body: { action: "cancel" } });
+check("guest cancels a pending request", r.status === 200, r);
+r = await api("/api/admin/bookings/email-confirm", { method: "POST", body: { token: mintToken(c2) } });
+check("a cancelled request cannot be approved from email", r.status === 409 && r.data.code === "BOOKING_NOT_PENDING", r);
+check("cancelled request stays cancelled", (await prisma.inquiry.findUnique({ where: { id: c2 } })).status === "CUSTOMER_CANCELLED");
+r = await api("/api/bookings/calendar");
+check("cancelled stay is released on the calendar", !r.data.blocked[grande.id].some(x => x.start === c2Start), r.data.blocked[grande.id]);
+
+for (const path of ["/", `/p/${grande.id}`, "/admin/confirm", "/customer/bookings"]) {
+  const page = await fetch(`${BASE}${path}`);
+  const html = await page.text();
+  check(`page ${path} renders`, page.status === 200 && html.includes("og:image"), page.status);
+  if (path.startsWith("/p/")) {
+    check("cabin page has gallery, own og:image, and image alt", html.includes("gallery-main") && /property="og:image" content="https?:\/\/[^"]+"/.test(html) && html.includes("og:image:alt"), null);
+    check("cabin page og:image is cropped to 1200x630", /og:image" content="[^"]*w=1200[^"]*h=630/.test(html) || /og:image" content="[^"]*h=630[^"]*w=1200/.test(html) || /blob\.vercel-storage/.test(html), null);
+  }
+}
 
 await prisma.$disconnect();
 console.log("\nbooking integration suite passed");

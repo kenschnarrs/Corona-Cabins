@@ -60,7 +60,8 @@ assert.match(adminList, /requireAdmin/);
 
 // Regression gate for the PR #5 management-confirm 500 and lifecycle rules.
 const bookingLib = fs.readFileSync("lib/booking.ts", "utf8");
-const adminId = fs.readFileSync("pages/api/admin/bookings/[id].ts", "utf8");
+// The status-change rules live in lib/booking-admin.ts, shared by the dashboard route and confirm-from-email.
+const adminId = fs.readFileSync("pages/api/admin/bookings/[id].ts", "utf8") + fs.readFileSync("lib/booking-admin.ts", "utf8");
 assert.match(bookingLib, /export function bookingConflictWhere/);
 const flatBookingLib = bookingLib.split(String.fromCharCode(10)).join(" ");
 assert.ok(!/inquiry: \{ status:[^;]*inquiryId/.test(flatBookingLib), "self-exclusion must not nest inquiryId inside the inquiry relation filter");
@@ -138,6 +139,9 @@ assert.match(cabinEditPage, /adminErrorMessage/, "cabin editor shows API errors 
 assert.match(richTextEditor, /t\.admin\.richText/, "rich-text toolbar is localized");
 const adminApiSources = [
   "pages/api/admin/bookings/[id].ts",
+  "lib/booking-admin.ts",
+  "pages/api/admin/bookings/email-confirm.ts",
+  "lib/email-actions.ts",
   "pages/api/admin/calendar/index.ts",
   "pages/api/admin/calendar/sync.ts",
   "pages/api/admin/calendar/connect.ts",
