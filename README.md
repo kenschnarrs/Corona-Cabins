@@ -70,6 +70,20 @@ Schema changes go through versioned Prisma migrations in `prisma/migrations`:
 - No credentials, secrets, or admin email addresses belong in this
   repository.
 
+### Booking confirmation emails
+
+- Creating a booking request emails the guest a bilingual (ES/EN)
+  request-received confirmation, and alerts the management addresses in
+  `ADMIN_ALERT_EMAILS`. Management confirming a booking emails the guest a
+  scheduled confirmation; either side cancelling emails the guest a
+  cancellation notice.
+- Mail goes through the Resend API (`RESEND_API_KEY`). The default sender is
+  Resend's test sender (`EMAIL_FROM` overrides it once a domain is verified),
+  which only delivers to the Resend account owner - real guest delivery needs
+  a verified sending domain first.
+- Missing or failing email configuration never breaks a booking: sends are
+  best-effort, logged, and the request still succeeds.
+
 ## Phase 1: public site (this branch)
 
 - The home page is the one-page landing from the approved mockup: hero,
