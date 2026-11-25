@@ -39,6 +39,11 @@ model Inquiry {
   customer_name  String
   customer_email String
   customer_phone String
+  // Guest's site language at booking time; drives single-language emails.
+  locale         String          @default("es")
+  // Short sequential number guests quote, e.g. "#1042". The cuid stays the
+  // internal key; a Postgres sequence keeps concurrent submits safe.
+  request_number Int             @unique @default(dbgenerated("nextval('inquiry_request_number_seq')"))
   notes          String          @db.Text
   created_at     DateTime        @default(now())
   updated_at     DateTime        @updatedAt
