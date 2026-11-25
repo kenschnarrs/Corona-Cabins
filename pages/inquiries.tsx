@@ -11,7 +11,7 @@ import prisma from "../lib/prisma";
 type Booking = { id: string; status: string; customer_name: string; customer_email: string; customer_phone: string; notes: string; created_at: string; request_number: number; cabins: { cabin: { name: string }; startDate: string; endDate: string }[] };
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const session = await getServerSession(ctx.req, ctx.res, authOptions);
-  if (!session || !isAdminEmail(session.user?.email)) return { redirect: { destination: "/api/auth/signin", permanent: false } };
+  if (!session || !isAdminEmail(session.user?.email)) return { redirect: { destination: "/auth/signin", permanent: false } };
   const bookings = await prisma.inquiry.findMany({ include: { cabins: { include: { cabin: { select: { name: true } } }, orderBy: { startDate: "asc" } } }, orderBy: { created_at: "desc" }, take: 250 });
   return { props: { bookings: JSON.parse(JSON.stringify(bookings)) } };
 };

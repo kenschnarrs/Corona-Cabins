@@ -7,11 +7,11 @@ import { sendBookingCancelledEmail } from "../../../../lib/email";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const auth = await requireCustomer(req, res); if (!auth) return;
   if (req.method !== "PATCH") { res.setHeader("Allow", "PATCH"); return res.status(405).json({ error: "Method not allowed." }); }
-  if (req.body.action !== "cancel") return res.status(400).json({ error: "Invalid action." });
+  if (req.body.action !== "cancel") return res.status(400).json({ error: "Invalid action.", code: "INVALID_ACTION" });
   const booking = await prisma.inquiry.findFirst({ where: { id: String(req.query.id), customer_email: auth.email }, include: { cabins: { include: { cabin: { select: { name: true } } } } } });
-  if (!booking) return res.status(404).json({ error: "Booking not found." });
+  if (!booking) return res.status(404).json({ error: "Booking not found.", code: "BOOKING_NOT_FOUND" });
   const effective = effectiveBookingStatus(booking.status, booking.cabins[0]?.startDate ?? booking.created_at, booking.cabins[0]?.endDate);
-  if (!["PENDING", "SCHEDULED"].includes(effective)) return res.status(409).json({ error: "This booking can no longer be cancelled by the customer." });
+  if (!["PENDING", "SCHEDULED"].includes(effective)) return res.status(409).json({ error: "This booking can no longer be cancelled by the customer.", code: "NOT_CANCELLABLE" });
   const updated = await prisma.inquiry.update({ where: { id: booking.id }, data: { status: "CUSTOMER_CANCELLED" } });
   const calendarSync = await syncBookingCalendarTransition(booking.id, "CUSTOMER_CANCELLED");
   await sendBookingCancelledEmail({

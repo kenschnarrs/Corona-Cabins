@@ -11,21 +11,43 @@ export type BookingConflict = {
   unavailableUntil: string;
 };
 
+/**
+ * Machine-readable codes for guest-facing validation failures. APIs return
+ * the code alongside the English message so the site can show the guest the
+ * same error in their own language (see the `errors` dictionary).
+ */
+export type StayDateErrorCode =
+  | "INVALID_DATES"
+  | "DEPARTURE_NOT_AFTER_ARRIVAL"
+  | "ARRIVAL_NOT_FUTURE"
+  | "DATES_TOO_FAR";
+
+export class StayDateError extends Error {
+  constructor(public code: StayDateErrorCode, message: string) {
+    super(message);
+    this.name = "StayDateError";
+  }
+}
+
 export function parseStayDates(start: unknown, end: unknown) {
   if (typeof start !== "string" || typeof end !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end)) {
-    throw new Error("Choose valid arrival and departure dates.");
+    throw new StayDateError("INVALID_DATES", "Choose valid arrival and departure dates.");
   }
   const startDate = new Date(`${start}T${String(CHECK_IN_HOUR).padStart(2, "0")}:00:00.000Z`);
   const endDate = new Date(`${end}T${String(CHECK_OUT_HOUR).padStart(2, "0")}:00:00.000Z`);
   if (!Number.isFinite(startDate.getTime()) || !Number.isFinite(endDate.getTime()) || endDate <= startDate) {
-    throw new Error("Departure must be after arrival.");
+    throw new StayDateError("DEPARTURE_NOT_AFTER_ARRIVAL", "Departure must be after arrival.");
   }
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
-  if (startDate < today) throw new Error("Arrival cannot be in the past.");
+  const arrivalDay = new Date(startDate);
+  arrivalDay.setUTCHours(0, 0, 0, 0);
+  // Same-day check-in is not offered: arrival must be a future date, so
+  // past days AND today are rejected together.
+  if (arrivalDay <= today) throw new StayDateError("ARRIVAL_NOT_FUTURE", "Arrival must be tomorrow or later; same-day check-in is not available.");
   const max = new Date(today);
   max.setUTCFullYear(max.getUTCFullYear() + 2);
-  if (endDate > max) throw new Error("Dates must be within the next two years.");
+  if (endDate > max) throw new StayDateError("DATES_TOO_FAR", "Dates must be within the next two years.");
   return { startDate, endDate };
 }
 

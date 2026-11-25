@@ -4,6 +4,6 @@ import { authOptions } from "../pages/api/auth/[...nextauth]";
 export async function requireCustomer(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
   const email = session?.user?.email?.trim().toLowerCase();
-  if (!email) { res.status(401).json({ error: "Sign in with Google to continue." }); return null; }
+  if (!email) { res.status(401).json({ error: "Sign in with Google to continue.", code: "SIGN_IN_REQUIRED" }); return null; }
   return { session, email };
 }

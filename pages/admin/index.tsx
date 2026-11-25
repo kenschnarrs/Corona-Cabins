@@ -10,7 +10,7 @@ import prisma from "../../lib/prisma";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const session = await getServerSession(ctx.req, ctx.res, authOptions);
-  if (!session || !isAdminEmail(session.user?.email)) return { redirect: { destination: "/api/auth/signin", permanent: false } };
+  if (!session || !isAdminEmail(session.user?.email)) return { redirect: { destination: "/auth/signin", permanent: false } };
   const cabins = await prisma.cabin.findMany({ orderBy: { price_per_night: "desc" }, select: { id: true, name: true, images: { select: { id: true } } } });
   return { props: { cabins } };
 };

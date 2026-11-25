@@ -71,6 +71,23 @@ export function useLanguage(): LanguageContextValue {
   return useContext(LanguageContext);
 }
 
+/**
+ * Show an API failure in the guest's language. Booking APIs return a
+ * machine-readable `code` alongside the English `error` message; the code
+ * maps into the `errors` dictionary and the English message is only a
+ * fallback for an unknown code.
+ */
+export function apiErrorMessage(
+  t: Dictionary,
+  data: { error?: unknown; code?: unknown },
+  fallback: string
+): string {
+  const errors = t.errors as Record<string, string>;
+  if (typeof data?.code === "string" && errors[data.code]) return errors[data.code];
+  if (typeof data?.error === "string" && data.error) return data.error;
+  return fallback;
+}
+
 /** Pick a _one/_other dictionary pair by count. */
 export function plural(
   t: Dictionary,

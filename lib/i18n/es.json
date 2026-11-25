@@ -49,7 +49,8 @@
     "name": "Cabañas Corona",
     "location": "Carichí, Chihuahua, México",
     "copyright": "© 2026 Cabañas Corona",
-    "admin": "Admin"
+    "admin": "Admin",
+    "myBookings": "Mis reservas"
   },
   "cabinCopy": {
     "Cabaña Grande": {
@@ -117,6 +118,50 @@
     "confirmationId": "Número de solicitud",
     "confirmationStatusLink": "Ver el estado de tu reserva",
     "confirmationAnother": "Hacer otra solicitud",
-    "error": "No pudimos consultar la disponibilidad. Edita la solicitud e inténtalo de nuevo."
+    "error": "No pudimos consultar la disponibilidad. Edita la solicitud e inténtalo de nuevo.",
+    "signInNote": "Para enviar la solicitud necesitas iniciar sesión con Google. Así conectamos la solicitud con tu página privada de estado de reserva."
+  },
+  "errors": {
+    "INVALID_DATES": "Elige fechas de llegada y salida válidas.",
+    "DEPARTURE_NOT_AFTER_ARRIVAL": "La salida debe ser después de la llegada.",
+    "ARRIVAL_NOT_FUTURE": "La llegada debe ser a partir de mañana; no se puede registrar entrada el mismo día.",
+    "DATES_TOO_FAR": "Las fechas deben estar dentro de los próximos dos años.",
+    "NO_CABINS": "Elige al menos una cabaña.",
+    "CABINS_NOT_FOUND": "Una o más cabañas elegidas ya no existen.",
+    "INVALID_GUEST_DETAILS": "Escribe tu nombre, un correo válido y un número de teléfono.",
+    "STAY_UNAVAILABLE": "La estancia solicitada ya no está disponible. Ajusta las fechas o las cabañas e inténtalo de nuevo.",
+    "AVAILABILITY_CHANGED": "La disponibilidad cambió mientras enviabas la solicitud. Revisa las fechas de nuevo.",
+    "AVAILABILITY_UNAVAILABLE": "No podemos consultar la disponibilidad en este momento. Inténtalo de nuevo.",
+    "BOOKING_UNAVAILABLE": "No podemos recibir solicitudes en este momento. Inténtalo de nuevo.",
+    "SIGN_IN_REQUIRED": "Inicia sesión con Google para continuar.",
+    "INVALID_ACTION": "Acción no válida.",
+    "BOOKING_NOT_FOUND": "No encontramos esta reserva.",
+    "NOT_CANCELLABLE": "Esta reserva ya no se puede cancelar en línea."
+  },
+  "statuses": {
+    "PENDING": "Pendiente",
+    "SCHEDULED": "Programada",
+    "ACTIVE": "En curso",
+    "COMPLETED": "Completada",
+    "CUSTOMER_CANCELLED": "Cancelada",
+    "MANAGEMENT_CANCELLED": "Cancelada"
+  },
+  "customerBookings": {
+    "seoTitle": "Mis reservas | Cabañas Corona",
+    "heading": "Mis reservas",
+    "signedInAs": "Sesión iniciada como",
+    "signOut": "Cerrar sesión",
+    "signInBody": "Inicia sesión con Google para ver y administrar tus solicitudes de reserva.",
+    "signInCta": "Iniciar sesión con Google",
+    "empty": "No encontramos reservas para esta cuenta de Google.",
+    "cancel": "Cancelar reserva",
+    "cancelError": "No pudimos cancelar esta reserva.",
+    "requestLabel": "Solicitud"
+  },
+  "auth": {
+    "seoTitle": "Iniciar sesión | Cabañas Corona",
+    "heading": "Iniciar sesión",
+    "body": "Usa tu cuenta de Google para solicitar una reserva y ver su estado.",
+    "google": "Iniciar sesión con Google"
   }
 }

@@ -2,7 +2,7 @@ import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { signIn, useSession } from "next-auth/react";
 import type { CabinProps } from "../lib/types";
-import { cabinCopy, useLanguage } from "../lib/i18n";
+import { apiErrorMessage, cabinCopy, useLanguage } from "../lib/i18n";
 import { formatPrice } from "../lib/cabins";
 
 type Conflict = { cabinId: string; cabinName: string; unavailableFrom: string; unavailableUntil: string };
@@ -24,7 +24,12 @@ export default function BookingFlow({ cabins }: Props) {
   const [message, setMessage] = useState("");
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [requestNumber, setRequestNumber] = useState<number | null>(null);
+  // Same-day check-in is not offered: the earliest arrival is tomorrow, and
+  // departure is at least the day after arrival (1-night minimum), matching
+  // the server rules in parseStayDates.
+  const addDays = (value: string, days: number) => { const d = new Date(`${value}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); };
   const today = new Date().toISOString().slice(0, 10);
+  const tomorrow = addDays(today, 1);
   const formatDisplayDate = (value: string) => new Intl.DateTimeFormat(lang === "es" ? "es-MX" : "en-US", { timeZone: "UTC", weekday: "long", year: "numeric", month: "long", day: "numeric" }).format(new Date(`${value}T00:00:00Z`));
   const nights = useMemo(() => startDate && endDate ? Math.max(0, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000)) : 0, [startDate, endDate]);
   const total = cabins.filter((c) => selected.includes(c.id)).reduce((sum, c) => sum + Number(c.price_per_night) * nights, 0);
@@ -45,7 +50,7 @@ export default function BookingFlow({ cabins }: Props) {
     setStatus("checking"); setMessage(""); setConflicts([]);
     const response = await fetch("/api/bookings/availability", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cabinIds: selected, startDate, endDate }) });
     const data = await response.json();
-    if (!response.ok) { setStatus("error"); setMessage(data.error || b.error); return; }
+    if (!response.ok) { setStatus("error"); setMessage(apiErrorMessage(t, data, b.error)); return; }
     if (data.conflicts?.length) { setStatus("error"); setConflicts(data.conflicts); setMessage(b.conflictIntro); return; }
     setStatus("available"); setMessage(b.available);
   }
@@ -57,7 +62,7 @@ export default function BookingFlow({ cabins }: Props) {
     setStatus("submitting");
     const response = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cabinIds: selected, startDate, endDate, customerName, customerEmail, customerPhone, notes, website: "", locale: lang }) });
     const data = await response.json();
-    if (!response.ok) { setStatus("error"); setMessage(data.error || b.error); setConflicts(data.conflicts || []); return; }
+    if (!response.ok) { setStatus("error"); setMessage(apiErrorMessage(t, data, b.error)); setConflicts(data.conflicts || []); return; }
     setRequestNumber(typeof data.requestNumber === "number" ? data.requestNumber : null); setMessage(""); setConflicts([]); setStatus("success");
   }
 
@@ -99,7 +104,7 @@ export default function BookingFlow({ cabins }: Props) {
             <div className="grid gap-3 sm:grid-cols-3">{cabins.map((c) => { const copy = cabinCopy(t, c.name); const active = selected.includes(c.id); return <label key={c.id} className={`cursor-pointer border p-4 transition ${active ? "border-terra bg-[#fff0e5] shadow" : "border-cardborder bg-white"}`}><input type="checkbox" className="mr-2 accent-[#9a3f1d]" checked={active} onChange={() => toggleCabin(c.id)}/><strong className="block mt-2 text-xl">{copy?.name || c.name}</strong><span className="font-sans text-xs text-muted">{formatPrice(c.price_per_night)} {t.cabins.perNight}</span></label> })}</div>
           </fieldset>
           <fieldset><legend className="mb-3 font-sans text-xs font-extrabold uppercase tracking-[.14em]">2. {b.chooseDates}</legend>
-            <div className="grid gap-4 sm:grid-cols-2"><label className="font-sans text-sm font-bold">{b.arrival}<input required min={today} type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); editRequest(); }} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal"/></label><label className="font-sans text-sm font-bold">{b.departure}<input required min={startDate || today} type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); editRequest(); }} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal"/></label></div>
+            <div className="grid gap-4 sm:grid-cols-2"><label className="font-sans text-sm font-bold">{b.arrival}<input required min={tomorrow} type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); editRequest(); }} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal"/></label><label className="font-sans text-sm font-bold">{b.departure}<input required min={startDate ? addDays(startDate, 1) : addDays(tomorrow, 1)} type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); editRequest(); }} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal"/></label></div>
             <p className="font-sans text-xs leading-relaxed text-muted">{b.timesAndBuffer}</p>
           </fieldset>
           <button type="button" disabled={!selected.length || !startDate || !endDate || status === "checking"} onClick={checkAvailability} className="bg-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-white disabled:opacity-40">{status === "checking" ? b.checking : b.check}</button>
@@ -110,7 +115,7 @@ export default function BookingFlow({ cabins }: Props) {
           <div className="space-y-4"><label className="block font-sans text-sm font-bold">{b.name}<input required value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal" maxLength={120}/></label><label className="block font-sans text-sm font-bold">{b.email}<input required readOnly={!!session?.user?.email} type="email" value={session?.user?.email || customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal read-only:bg-[#f2eee8]" maxLength={254}/></label><label className="block font-sans text-sm font-bold">{b.phone}<input required type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal" maxLength={40}/></label><label className="block font-sans text-sm font-bold">{b.notes}<textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-2 block min-h-[110px] w-full border border-cardborder bg-white p-3 font-normal" maxLength={2000}/></label></div>
           {nights > 0 && selected.length > 0 && <p className="border-t border-cardborder pt-4 font-sans text-sm"><strong>{nights} {nights === 1 ? b.night : b.nights}</strong><br/>{b.estimated}: {formatPrice(total)}</p>}
           <p className="font-sans text-xs leading-relaxed text-muted">{b.requestNote}</p>
-          {sessionStatus !== "authenticated" && <p className="font-sans text-xs leading-relaxed text-muted">Google sign-in is required before submitting. This connects the request to your private booking-status page.</p>}
+          {sessionStatus !== "authenticated" && <p className="font-sans text-xs leading-relaxed text-muted">{b.signInNote}</p>}
           <button type="submit" disabled={status !== "available"} className="w-full bg-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-white disabled:opacity-40">{status === "submitting" ? b.submitting : b.submit}</button>
         </aside>
       </form>

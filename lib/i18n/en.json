@@ -49,7 +49,8 @@
     "name": "Cabañas Corona",
     "location": "Carichí, Chihuahua, Mexico",
     "copyright": "© 2026 Cabañas Corona",
-    "admin": "Admin"
+    "admin": "Admin",
+    "myBookings": "My bookings"
   },
   "cabinCopy": {
     "Cabaña Grande": {
@@ -117,6 +118,50 @@
     "confirmationId": "Request number",
     "confirmationStatusLink": "View your booking status",
     "confirmationAnother": "Make another request",
-    "error": "We could not check availability. Please edit the request and try again."
+    "error": "We could not check availability. Please edit the request and try again.",
+    "signInNote": "Google sign-in is required before submitting. This connects the request to your private booking-status page."
+  },
+  "errors": {
+    "INVALID_DATES": "Choose valid arrival and departure dates.",
+    "DEPARTURE_NOT_AFTER_ARRIVAL": "Departure must be after arrival.",
+    "ARRIVAL_NOT_FUTURE": "Arrival must be tomorrow or later; same-day check-in is not available.",
+    "DATES_TOO_FAR": "Dates must be within the next two years.",
+    "NO_CABINS": "Choose at least one cabin.",
+    "CABINS_NOT_FOUND": "One or more selected cabins no longer exist.",
+    "INVALID_GUEST_DETAILS": "Enter your name, a valid email, and a phone number.",
+    "STAY_UNAVAILABLE": "The requested stay is no longer available. Adjust the dates or cabins and try again.",
+    "AVAILABILITY_CHANGED": "Availability changed while you submitted. Please check the dates again.",
+    "AVAILABILITY_UNAVAILABLE": "Availability is temporarily unavailable. Please try again.",
+    "BOOKING_UNAVAILABLE": "Booking requests are temporarily unavailable. Please try again.",
+    "SIGN_IN_REQUIRED": "Sign in with Google to continue.",
+    "INVALID_ACTION": "Invalid action.",
+    "BOOKING_NOT_FOUND": "We could not find this booking.",
+    "NOT_CANCELLABLE": "This booking can no longer be cancelled online."
+  },
+  "statuses": {
+    "PENDING": "Pending",
+    "SCHEDULED": "Scheduled",
+    "ACTIVE": "Active",
+    "COMPLETED": "Completed",
+    "CUSTOMER_CANCELLED": "Cancelled",
+    "MANAGEMENT_CANCELLED": "Cancelled"
+  },
+  "customerBookings": {
+    "seoTitle": "My bookings | Cabañas Corona",
+    "heading": "My bookings",
+    "signedInAs": "Signed in as",
+    "signOut": "Sign out",
+    "signInBody": "Sign in with Google to view and manage your booking requests.",
+    "signInCta": "Sign in with Google",
+    "empty": "No bookings found for this Google account.",
+    "cancel": "Cancel booking",
+    "cancelError": "Could not cancel this booking.",
+    "requestLabel": "Request"
+  },
+  "auth": {
+    "seoTitle": "Sign in | Cabañas Corona",
+    "heading": "Sign in",
+    "body": "Use your Google account to request a booking and check its status.",
+    "google": "Sign in with Google"
   }
 }

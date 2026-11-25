@@ -12,7 +12,7 @@ import type { CabinProps } from "../../../lib/types";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const session = await getServerSession(ctx.req, ctx.res, authOptions);
-  if (!session || !isAdminEmail(session.user?.email)) return { redirect: { destination: "/api/auth/signin", permanent: false } };
+  if (!session || !isAdminEmail(session.user?.email)) return { redirect: { destination: "/auth/signin", permanent: false } };
   const cabin = await prisma.cabin.findUnique({ where: { id: String(ctx.params?.id) }, include: { images: { orderBy: { sort_order: "asc" } } } });
   if (!cabin) return { notFound: true };
   return { props: { initialCabin: JSON.parse(JSON.stringify(cabin)) } };
