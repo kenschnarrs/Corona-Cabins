@@ -8,8 +8,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "DELETE") return methodNotAllowed(res, ["DELETE"]);
   const cabinId = String(req.query.id), imageId = typeof req.body.imageId === "string" ? req.body.imageId : "";
   const image = await prisma.cabinImage.findFirst({ where: { id: imageId, cabinId } });
-  if (!image) return res.status(404).json({ error: "Image not found for this cabin." });
-  if (!image.blob_pathname) return res.status(409).json({ error: "This legacy image is not managed by Blob and cannot be deleted here." });
+  if (!image) return res.status(404).json({ error: "Image not found for this cabin.", code: "IMAGE_NOT_FOUND" });
+  if (!image.blob_pathname) return res.status(409).json({ error: "This legacy image is not managed by Blob and cannot be deleted here.", code: "LEGACY_IMAGE" });
   await del(image.url);
   try {
     await prisma.$transaction(async (tx) => {
@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await Promise.all(remaining.map((item, sort_order) => tx.cabinImage.update({ where: { id: item.id }, data: { sort_order } })));
     });
   } catch {
-    return res.status(500).json({ error: "Blob was deleted, but database cleanup failed. Contact support before retrying." });
+    return res.status(500).json({ error: "Blob was deleted, but database cleanup failed. Contact support before retrying.", code: "DELETE_CLEANUP_FAILED" });
   }
   return res.json({ ok: true });
 }

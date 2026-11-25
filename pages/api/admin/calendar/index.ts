@@ -22,9 +22,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === "POST") {
     const calendarId = clean(req.body.calendarId, 300);
     const calendarName = clean(req.body.calendarName, 120);
-    if (!calendarId) return res.status(400).json({ error: "Enter the Google Calendar ID." });
+    if (!calendarId) return res.status(400).json({ error: "Enter the Google Calendar ID.", code: "CALENDAR_ID_REQUIRED" });
     const connection = await prisma.calendarConnection.findUnique({ where: { id: "primary" } });
-    if (!connection) return res.status(409).json({ error: "Connect Google first, then choose the calendar." });
+    if (!connection) return res.status(409).json({ error: "Connect Google first, then choose the calendar.", code: "CONNECT_GOOGLE_FIRST" });
     await prisma.calendarConnection.update({ where: { id: "primary" }, data: { calendarId, calendarName } });
     return res.json({ ok: true });
   }

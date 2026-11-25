@@ -124,8 +124,12 @@ export function isCancelledStatus(status: StoredBookingStatus): boolean {
   return status === "CUSTOMER_CANCELLED" || status === "MANAGEMENT_CANCELLED";
 }
 
-export function managementTransitionError(current: StoredBookingStatus, target: StoredBookingStatus): string | null {
-  if (current === "ACTIVE" || current === "COMPLETED") return "A stay that has already started can no longer be changed.";
-  if (isCancelledStatus(current) && target === "MANAGEMENT_CANCELLED") return "This booking request is already cancelled.";
+// Returns a machine-readable code; the admin API pairs it with the English
+// fallback message and the admin UI maps the code into the admin's language.
+export type ManagementTransitionErrorCode = "STAY_ALREADY_STARTED" | "REQUEST_ALREADY_CANCELLED";
+
+export function managementTransitionError(current: StoredBookingStatus, target: StoredBookingStatus): ManagementTransitionErrorCode | null {
+  if (current === "ACTIVE" || current === "COMPLETED") return "STAY_ALREADY_STARTED";
+  if (isCancelledStatus(current) && target === "MANAGEMENT_CANCELLED") return "REQUEST_ALREADY_CANCELLED";
   return null;
 }

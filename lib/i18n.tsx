@@ -77,15 +77,31 @@ export function useLanguage(): LanguageContextValue {
  * maps into the `errors` dictionary and the English message is only a
  * fallback for an unknown code.
  */
+function errorFromMap(
+  errors: Record<string, string>,
+  data: { error?: unknown; code?: unknown },
+  fallback: string
+): string {
+  if (typeof data?.code === "string" && errors[data.code]) return errors[data.code];
+  if (typeof data?.error === "string" && data.error) return data.error;
+  return fallback;
+}
+
 export function apiErrorMessage(
   t: Dictionary,
   data: { error?: unknown; code?: unknown },
   fallback: string
 ): string {
-  const errors = t.errors as Record<string, string>;
-  if (typeof data?.code === "string" && errors[data.code]) return errors[data.code];
-  if (typeof data?.error === "string" && data.error) return data.error;
-  return fallback;
+  return errorFromMap(t.errors as Record<string, string>, data, fallback);
+}
+
+/** Same mapping for admin APIs, against the admin.errors dictionary. */
+export function adminErrorMessage(
+  t: Dictionary,
+  data: { error?: unknown; code?: unknown },
+  fallback: string
+): string {
+  return errorFromMap(t.admin.errors as Record<string, string>, data, fallback);
 }
 
 /** Pick a _one/_other dictionary pair by count. */

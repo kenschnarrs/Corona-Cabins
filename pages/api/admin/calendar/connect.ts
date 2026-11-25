@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!(await requireAdmin(req, res))) return;
   if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
   if (!process.env.GOOGLE_ID || !process.env.GOOGLE_SECRET) {
-    return res.status(500).json({ error: "Google sign-in is not configured on this deployment." });
+    return res.status(500).json({ error: "Google sign-in is not configured on this deployment.", code: "GOOGLE_NOT_CONFIGURED" });
   }
   const state = randomBytes(16).toString("hex");
   const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";

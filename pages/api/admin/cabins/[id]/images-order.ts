@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const ids = Array.isArray(req.body.ids) && req.body.ids.every((id: unknown) => typeof id === "string") ? req.body.ids as string[] : [];
   const current = await prisma.cabinImage.findMany({ where: { cabinId }, select: { id: true } });
   if (ids.length !== current.length || new Set(ids).size !== ids.length || current.some((img) => !ids.includes(img.id)))
-    return res.status(400).json({ error: "Image order must include every cabin image exactly once." });
+    return res.status(400).json({ error: "Image order must include every cabin image exactly once.", code: "IMAGE_ORDER_INVALID" });
   await prisma.$transaction(ids.map((id, sort_order) => prisma.cabinImage.update({ where: { id }, data: { sort_order } })));
   return res.json({ ok: true });
 }
