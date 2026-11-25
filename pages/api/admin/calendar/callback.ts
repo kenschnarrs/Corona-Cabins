@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../../lib/prisma";
-import { calendarCallbackUri, exchangeCalendarCode } from "../../../../lib/google-calendar";
+import { calendarCallbackUri, exchangeCalendarCode, CALENDAR_SCOPE } from "../../../../lib/google-calendar";
 
 function redirect(res: NextApiResponse, params: Record<string, string>) {
   const query = new URLSearchParams(params).toString();
@@ -30,6 +30,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   try {
     const tokens = await exchangeCalendarCode(code, calendarCallbackUri(req));
+    if (!tokens.grantedScope.split(/\s+/).includes(CALENDAR_SCOPE)) {
+      return redirect(res, { error: "CALENDAR_SCOPE_MISSING" });
+    }
     const existing = await prisma.calendarConnection.findUnique({ where: { id: "primary" } });
     await prisma.calendarConnection.upsert({
       where: { id: "primary" },

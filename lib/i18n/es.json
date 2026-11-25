@@ -175,7 +175,9 @@
       "updateFailed": "No se pudo actualizar la solicitud.",
       "empty": "Aún no hay solicitudes de reserva.",
       "requestLabel": "Solicitud",
-      "received": "Recibida"
+      "received": "Recibida",
+      "calendarSyncFailed": "Estado guardado, pero falló la sincronización con Google Calendar. Abre la sincronización del calendario y pulsa Sincronizar, o vuelve a conectar Google.",
+      "calendarNotConnected": "Estado guardado, pero Google Calendar no está conectado, así que el calendario no se actualizó."
     },
     "hub": {
       "seoTitle": "Administración | Cabañas Corona",
@@ -290,7 +292,8 @@
       "IMAGE_NOT_FOUND": "Imagen no encontrada para esta cabaña.",
       "LEGACY_IMAGE": "Esta imagen antigua no está administrada por Blob y no se puede eliminar aquí.",
       "DELETE_CLEANUP_FAILED": "El archivo se eliminó, pero la limpieza de la base de datos falló. Contacta soporte antes de reintentar.",
-      "IMAGE_ORDER_INVALID": "El orden de las imágenes debe incluir cada imagen de la cabaña exactamente una vez."
+      "IMAGE_ORDER_INVALID": "El orden de las imágenes debe incluir cada imagen de la cabaña exactamente una vez.",
+      "CALENDAR_SCOPE_MISSING": "Google no concedió acceso al calendario. Vuelve a conectar y deja marcado el permiso del calendario."
     }
   }
 }
