@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "../../../lib/prisma";
 import { findBookingConflicts, parseStayDates } from "../../../lib/booking";
 import { requireCustomer } from "../../../lib/customer-api";
+import { sendBookingReceivedEmails } from "../../../lib/email";
 
 const clean = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,10 +42,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         select: { id: true },
       });
-      return { kind: "created" as const, id: inquiry.id };
+      return { kind: "created" as const, id: inquiry.id, cabinNames: cabins.map((cabin) => cabin.name) };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     if (result.kind === "conflict") return res.status(409).json({ error: "The requested stay is no longer available.", conflicts: result.conflicts });
     if (result.kind === "error") return res.status(400).json({ error: result.error });
+    await sendBookingReceivedEmails({
+      customerName,
+      customerEmail,
+      customerPhone,
+      notes,
+      stays: result.cabinNames.map((cabinName) => ({ cabinName, startDate, endDate })),
+    });
     return res.status(201).json({ ok: true, requestId: result.id });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return res.status(409).json({ error: "Availability changed while you submitted. Please check the dates again." });

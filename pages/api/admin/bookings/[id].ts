@@ -4,13 +4,14 @@ import prisma from "../../../../lib/prisma";
 import { requireAdmin, methodNotAllowed } from "../../../../lib/admin-api";
 import { effectiveBookingStatus, findBookingConflicts, isCancelledStatus, MANAGEMENT_TARGET_STATUSES, managementTransitionError } from "../../../../lib/booking";
 import { syncBookingCalendarTransition } from "../../../../lib/google-calendar";
+import { sendBookingCancelledEmail, sendBookingScheduledEmail } from "../../../../lib/email";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!(await requireAdmin(req, res))) return;
   if (req.method !== "PATCH") return methodNotAllowed(res, ["PATCH"]);
   const status = typeof req.body.status === "string" ? req.body.status as BookingStatus : null;
   if (!status || !Object.values(BookingStatus).includes(status)) return res.status(400).json({ error: "Invalid status." });
-  const current = await prisma.inquiry.findUnique({ where: { id: String(req.query.id) }, include: { cabins: true } });
+  const current = await prisma.inquiry.findUnique({ where: { id: String(req.query.id) }, include: { cabins: { include: { cabin: { select: { name: true } } } } } });
   if (!current) return res.status(404).json({ error: "Booking request not found." });
   if (!MANAGEMENT_TARGET_STATUSES.includes(status)) return res.status(400).json({ error: "Management may set pending, scheduled, or management cancelled." });
   const firstStay = current.cabins[0];
@@ -30,5 +31,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // cancelled bookings come off it. A calendar outage never fails the booking
   // change itself - the outcome is reported so the admin can re-sync.
   const calendarSync = await syncBookingCalendarTransition(current.id, status);
+  const emailBooking = {
+    customerName: current.customer_name,
+    customerEmail: current.customer_email,
+    stays: current.cabins.map((stay) => ({ cabinName: stay.cabin.name, startDate: stay.startDate, endDate: stay.endDate })),
+  };
+  if (status === "SCHEDULED" && current.status !== "SCHEDULED") await sendBookingScheduledEmail(emailBooking);
+  if (status === "MANAGEMENT_CANCELLED" && !isCancelledStatus(current.status)) await sendBookingCancelledEmail(emailBooking);
   return res.json({ ...booking, calendarSync });
 }
