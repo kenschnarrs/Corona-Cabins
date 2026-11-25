@@ -18,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     customerName: booking.customer_name,
     customerEmail: booking.customer_email,
     locale: booking.locale === "en" ? "en" as const : "es" as const,
+    requestNumber: booking.request_number,
     stays: booking.cabins.map((stay) => ({ cabinName: stay.cabin.name, startDate: stay.startDate, endDate: stay.endDate })),
   });
   return res.json({ ...updated, calendarSync });

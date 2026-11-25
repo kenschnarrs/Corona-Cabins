@@ -23,7 +23,7 @@ export default function BookingFlow({ cabins }: Props) {
   const [status, setStatus] = useState<"idle" | "checking" | "available" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
-  const [requestId, setRequestId] = useState("");
+  const [requestNumber, setRequestNumber] = useState<number | null>(null);
   const today = new Date().toISOString().slice(0, 10);
   const formatDisplayDate = (value: string) => new Intl.DateTimeFormat(lang === "es" ? "es-MX" : "en-US", { timeZone: "UTC", weekday: "long", year: "numeric", month: "long", day: "numeric" }).format(new Date(`${value}T00:00:00Z`));
   const nights = useMemo(() => startDate && endDate ? Math.max(0, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000)) : 0, [startDate, endDate]);
@@ -58,7 +58,7 @@ export default function BookingFlow({ cabins }: Props) {
     const response = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cabinIds: selected, startDate, endDate, customerName, customerEmail, customerPhone, notes, website: "", locale: lang }) });
     const data = await response.json();
     if (!response.ok) { setStatus("error"); setMessage(data.error || b.error); setConflicts(data.conflicts || []); return; }
-    setRequestId(data.requestId); setMessage(""); setConflicts([]); setStatus("success");
+    setRequestNumber(typeof data.requestNumber === "number" ? data.requestNumber : null); setMessage(""); setConflicts([]); setStatus("success");
   }
 
   // A submitted request replaces the form with a dedicated confirmation
@@ -71,7 +71,7 @@ export default function BookingFlow({ cabins }: Props) {
           <h2 className="m-0 text-[clamp(32px,4vw,48px)] font-medium leading-[1.05] tracking-[-.03em]">{b.confirmationTitle}</h2>
           <p className="mt-4 max-w-[690px] leading-relaxed">{b.confirmationBody}</p>
           <dl className="mt-6 grid gap-x-8 gap-y-3 font-sans text-sm sm:grid-cols-2">
-            <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.confirmationId}</dt><dd className="m-0 mt-1 break-all">{requestId}</dd></div>
+            <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.confirmationId}</dt><dd className="m-0 mt-1 break-all">{requestNumber !== null ? `#${requestNumber}` : ""}</dd></div>
             <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.chooseCabins}</dt><dd className="m-0 mt-1">{confirmedCabins.map((c) => cabinCopy(t, c.name)?.name || c.name).join(", ")}</dd></div>
             <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.arrival}</dt><dd className="m-0 mt-1">{formatDisplayDate(startDate)}</dd></div>
             <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.departure}</dt><dd className="m-0 mt-1">{formatDisplayDate(endDate)}</dd></div>

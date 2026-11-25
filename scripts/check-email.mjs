@@ -44,6 +44,7 @@ const booking = {
   customerEmail: "guest@example.test",
   customerPhone: "+1 555 0100",
   notes: "Anniversary trip",
+  requestNumber: 1042,
   stays: [
     { cabinName: "Cabin 1", startDate: new Date("2027-03-05T13:00:00.000Z"), endDate: new Date("2027-03-08T12:00:00.000Z") },
     { cabinName: "Cabin 2", startDate: new Date("2027-03-05T13:00:00.000Z"), endDate: new Date("2027-03-08T12:00:00.000Z") },
@@ -61,8 +62,10 @@ assert.ok(received.html.includes("Test &lt;Guest&gt; &amp; Co"), "HTML escapes t
 assert.ok(!received.html.includes("Test <Guest>"), "no raw HTML injection");
 assert.ok(!received.html.includes("We received your booking request"), "Spanish email carries no English section");
 assert.ok(!received.text.includes("Your booking status"), "Spanish text part stays Spanish");
+assert.ok(received.html.includes("Solicitud #1042") && received.text.includes("Solicitud #1042"), "Spanish email shows the friendly request number");
 const receivedEn = email.buildRequestReceivedEmail({ ...booking, locale: "en" });
 assert.equal(receivedEn.subject, "We received your booking request");
+assert.ok(receivedEn.html.includes("Request #1042") && receivedEn.text.includes("Request #1042"), "English email shows the friendly request number");
 assert.ok(receivedEn.text.includes("Cabin 1") && receivedEn.text.includes("March"), "text part carries the stays");
 assert.ok(!receivedEn.html.includes("Recibimos tu solicitud"), "English email carries no Spanish section");
 assert.ok(receivedEn.html.includes("Test &lt;Guest&gt; &amp; Co"), "English HTML escapes the guest name too");
@@ -89,6 +92,7 @@ process.env.ADMIN_ALERT_EMAILS = " owner@example.test , manager@example.test ";
 const alert = email.buildAdminNewRequestEmail(booking);
 assert.deepEqual(alert.to, ["owner@example.test", "manager@example.test"]);
 assert.match(alert.subject, /Test <Guest> & Co/, "admin subject names the guest plainly");
+assert.ok(alert.html.includes("#1042") && alert.text.includes("Request: #1042"), "admin alert carries the friendly request number");
 assert.ok(alert.html.includes("Anniversary trip") && alert.text.includes("+1 555 0100"), "alert carries contact details and notes");
 assert.ok(alert.html.includes("Test &lt;Guest&gt;"), "alert HTML escapes too");
 

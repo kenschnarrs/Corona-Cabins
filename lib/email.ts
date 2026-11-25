@@ -36,6 +36,8 @@ export type EmailBooking = {
    * language rather than bilingual. Defaults to Spanish, the site's default.
    */
   locale?: EmailLocale;
+  /** Short sequential number guests quote, e.g. 1042 for "Request #1042". */
+  requestNumber?: number | null;
   stays: EmailStay[];
 };
 
@@ -140,9 +142,13 @@ type GuestCopy = {
 function buildGuestEmail(booking: EmailBooking, copy: GuestCopy): EmailMessage {
   const locale = emailLocale(booking);
   const statusUrl = customerBookingsUrl();
+  const reference = typeof booking.requestNumber === "number"
+    ? (locale === "es" ? `Solicitud #${booking.requestNumber}` : `Request #${booking.requestNumber}`)
+    : "";
   const html = page(`
     <p>${copy.greeting} ${escapeHtml(booking.customerName)},</p>
     <p>${copy.body}</p>
+    ${reference ? `<p><strong>${reference}</strong></p>` : ""}
     ${staysHtml(booking, locale)}
     ${linkHtml(statusUrl, copy.link)}
   `);
@@ -150,6 +156,7 @@ function buildGuestEmail(booking: EmailBooking, copy: GuestCopy): EmailMessage {
     `${copy.greeting} ${booking.customerName},`,
     "",
     copy.body,
+    reference,
     ...stayLines(booking, locale),
     statusUrl ? copy.textLink : "",
   ].filter(Boolean).join("\n");
@@ -222,6 +229,7 @@ export function buildAdminNewRequestEmail(booking: EmailBooking): EmailMessage |
   const notes = booking.notes?.trim();
   const rows = [
     ["Guest", booking.customerName],
+    ["Request", typeof booking.requestNumber === "number" ? `#${booking.requestNumber}` : ""],
     ["Email", booking.customerEmail],
     ["Phone", booking.customerPhone ?? ""],
     ...booking.stays.map((stay) => [

@@ -35,6 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     customerName: current.customer_name,
     customerEmail: current.customer_email,
     locale: current.locale === "en" ? "en" as const : "es" as const,
+    requestNumber: current.request_number,
     stays: current.cabins.map((stay) => ({ cabinName: stay.cabin.name, startDate: stay.startDate, endDate: stay.endDate })),
   };
   if (status === "SCHEDULED" && current.status !== "SCHEDULED") await sendBookingScheduledEmail(emailBooking);
