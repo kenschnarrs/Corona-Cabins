@@ -4,7 +4,7 @@ import fs from "node:fs";
 const emailLib = fs.readFileSync("lib/email.ts", "utf8");
 const schema = fs.readFileSync("prisma/schema.prisma", "utf8");
 const createApi = fs.readFileSync("pages/api/bookings/index.ts", "utf8");
-const adminApi = fs.readFileSync("pages/api/admin/bookings/[id].ts", "utf8");
+const adminApi = fs.readFileSync("pages/api/admin/bookings/[id].ts", "utf8") + fs.readFileSync("lib/booking-admin.ts", "utf8");
 const customerApi = fs.readFileSync("pages/api/customer/bookings/[id].ts", "utf8");
 const envExample = fs.readFileSync(".env.example", "utf8");
 
@@ -27,7 +27,7 @@ assert.match(customerApi, /sendBookingCancelledEmail\(/, "customer cancel emails
 for (const env of ["RESEND_API_KEY", "EMAIL_FROM", "ADMIN_ALERT_EMAILS"]) assert.match(envExample, new RegExp(env), `.env.example documents ${env}`);
 
 // Ken's rule: management addresses live in protected env config, never source.
-for (const file of ["lib/email.ts", "pages/api/bookings/index.ts", "pages/api/admin/bookings/[id].ts", "pages/api/customer/bookings/[id].ts"]) {
+for (const file of ["lib/email.ts", "pages/api/bookings/index.ts", "pages/api/admin/bookings/[id].ts", "lib/booking-admin.ts", "pages/api/customer/bookings/[id].ts"]) {
   const text = fs.readFileSync(file, "utf8");
   assert.ok(!/knschnarrs|karinavcorona|sandraverovarela/i.test(text), `${file} hardcodes no management email`);
 }

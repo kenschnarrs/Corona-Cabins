@@ -13,6 +13,7 @@
 // best-effort: errors are logged and returned, never thrown.
 
 import { CHECK_IN_HOUR, CHECK_OUT_HOUR } from "./booking";
+import { confirmLinkPath, createConfirmToken } from "./email-actions";
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const DEFAULT_FROM = "Cabañas Corona <onboarding@resend.dev>";
@@ -27,6 +28,8 @@ export type EmailStay = {
 };
 
 export type EmailBooking = {
+  /** Internal request id; lets the admin alert carry a one-click approve link. */
+  inquiryId?: string;
   customerName: string;
   customerEmail: string;
   customerPhone?: string | null;
@@ -108,6 +111,21 @@ export function customerBookingsUrl(): string {
 
 export function adminBookingsUrl(): string {
   return `${siteBaseUrl()}/admin`;
+}
+
+/**
+ * Signed one-click approval link for the admin alert. Empty when the site URL
+ * or NEXTAUTH_SECRET is not configured, in which case the alert just carries
+ * the dashboard link.
+ */
+export function adminConfirmUrl(inquiryId: string | undefined): string {
+  const base = siteBaseUrl();
+  if (!inquiryId || !base) return "";
+  try {
+    return `${base}${confirmLinkPath(createConfirmToken(inquiryId))}`;
+  } catch {
+    return "";
+  }
 }
 
 function stayLines(booking: EmailBooking, locale: "es" | "en"): string[] {
@@ -238,17 +256,20 @@ export function buildAdminNewRequestEmail(booking: EmailBooking): EmailMessage |
     ] as const),
     ["Notes", notes ?? ""],
   ].filter(([, value]) => value);
+  const confirmUrl = adminConfirmUrl(booking.inquiryId);
   const html = page(`
     <p>New booking request.</p>
     <table cellpadding="4" style="border-collapse:collapse;">${rows
       .map(([label, value]) => `<tr><td style="vertical-align:top;color:#6b7280;">${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`)
       .join("")}</table>
+    ${confirmUrl ? `<p><a href="${escapeHtml(confirmUrl)}" style="display:inline-block;background:#a94422;color:#ffffff;padding:10px 18px;text-decoration:none;font-weight:bold;">Review and approve</a></p><p style="font-size:13px;color:#6b7280;">Opens a confirmation page (sign in with your admin Google account). Nothing changes until you press Confirm there. The link expires in 7 days.</p>` : ""}
     ${linkHtml(adminBookingsUrl(), "Review in the admin dashboard")}
   `);
   const text = [
     "New booking request.",
     "",
     ...rows.map(([label, value]) => `${label}: ${value}`),
+    confirmUrl ? `Review and approve (admin sign-in required; nothing changes until you press Confirm; expires in 7 days): ${confirmUrl}` : "",
     adminBookingsUrl() ? `Admin dashboard: ${adminBookingsUrl()}` : "",
   ].filter(Boolean).join("\n");
   return {

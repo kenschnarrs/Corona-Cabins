@@ -293,7 +293,60 @@
       "LEGACY_IMAGE": "Esta imagen antigua no está administrada por Blob y no se puede eliminar aquí.",
       "DELETE_CLEANUP_FAILED": "El archivo se eliminó, pero la limpieza de la base de datos falló. Contacta soporte antes de reintentar.",
       "IMAGE_ORDER_INVALID": "El orden de las imágenes debe incluir cada imagen de la cabaña exactamente una vez.",
-      "CALENDAR_SCOPE_MISSING": "Google no concedió acceso al calendario. Vuelve a conectar y deja marcado el permiso del calendario."
+      "CALENDAR_SCOPE_MISSING": "Google no concedió acceso al calendario. Vuelve a conectar y deja marcado el permiso del calendario.",
+      "CONFIRM_LINK_INVALID": "Este enlace de aprobación no es válido. Usa el panel de solicitudes.",
+      "CONFIRM_LINK_EXPIRED": "Este enlace de aprobación venció. Usa el panel de solicitudes.",
+      "BOOKING_NOT_PENDING": "Esta solicitud ya no está pendiente, así que no se puede aprobar desde el correo. Abre el panel."
+    },
+    "confirmEmail": {
+      "seoTitle": "Aprobar solicitud | Cabañas Corona",
+      "eyebrow": "Aprobación desde el correo",
+      "heading": "Aprobar solicitud de reserva",
+      "intro": "Revisa los datos y pulsa Confirmar. Se avisará al huésped por correo y se agregará al calendario.",
+      "request": "Solicitud",
+      "guest": "Huésped",
+      "stays": "Estancias",
+      "status": "Estado",
+      "confirm": "Confirmar reserva",
+      "confirming": "Confirmando...",
+      "done": "Reserva confirmada. El huésped recibirá un correo.",
+      "alreadyDone": "Esta reserva ya estaba confirmada.",
+      "dashboard": "Abrir el panel de solicitudes",
+      "loading": "Cargando solicitud...",
+      "loadError": "No pudimos cargar la solicitud. Inténtalo de nuevo.",
+      "confirmError": "No se pudo confirmar la reserva.",
+      "noToken": "Falta el enlace de aprobación. Usa el botón del correo de alerta.",
+      "signInBody": "Inicia sesión con tu cuenta de administrador para revisar y confirmar esta solicitud.",
+      "signInCta": "Iniciar sesión con Google"
     }
+  },
+  "availability": {
+    "heading": "Disponibilidad",
+    "intro": "Toca tu día de llegada y luego tu día de salida. Los días tachados ya están reservados.",
+    "legendFree": "Disponible",
+    "legendBooked": "Reservado",
+    "legendSelected": "Tu estancia",
+    "prevMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente",
+    "hintAll": "Mostrando los días en que todas las cabañas están reservadas. Elige una cabaña para ver sus fechas.",
+    "hintSelected": "Mostrando los días en que alguna de las cabañas elegidas está reservada.",
+    "pickDeparture": "Ahora elige tu día de salida.",
+    "rangeBlocked": "Esas fechas incluyen un día reservado. Elige otras fechas.",
+    "loading": "Cargando disponibilidad...",
+    "loadError": "No pudimos cargar el calendario. Puedes elegir las fechas abajo y consultar la disponibilidad."
+  },
+  "gallery": {
+    "heading": "Fotos",
+    "openPhoto": "Abrir foto {n} de {total}",
+    "close": "Cerrar",
+    "previous": "Foto anterior",
+    "next": "Foto siguiente",
+    "counter": "{n} de {total}"
+  },
+  "whatsapp": {
+    "cta": "Escríbenos por WhatsApp",
+    "hint": "¿Dudas sobre tu solicitud? Escríbenos directamente.",
+    "messageWithNumber": "¡Hola! Acabo de enviar la solicitud de reserva #{number} en el sitio de Cabañas Corona.",
+    "messageGeneric": "¡Hola! Tengo una pregunta sobre una reserva en Cabañas Corona."
   }
 }

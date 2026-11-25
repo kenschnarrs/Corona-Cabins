@@ -6,6 +6,8 @@ import Seo from "../../components/Seo";
 import { CabinProps } from "../../lib/types";
 import { amenityChips, formatPrice } from "../../lib/cabins";
 import { cabinPhoto } from "../../lib/placeholders";
+import { galleryPhotos } from "../../lib/gallery";
+import CabinGallery from "../../components/CabinGallery";
 import { cabinCopy, useLanguage } from "../../lib/i18n";
 
 import prisma from "../../lib/prisma";
@@ -13,7 +15,7 @@ import prisma from "../../lib/prisma";
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const cabin = await prisma.cabin.findUnique({
     where: { id: String(params?.id) },
-    include: { images: true },
+    include: { images: { orderBy: { sort_order: "asc" } } },
   });
 
   if (!cabin) {
@@ -34,6 +36,7 @@ const CabinShowPage: React.FC<CabinShowPageProps> = ({ cabin }) => {
   const copy = cabinCopy(t, cabin.name);
   const primary = cabin.images.find((img) => img.type === "Primary");
   const photo = cabinPhoto(cabin.name, primary?.url ?? null);
+  const photos = galleryPhotos(cabin.name, cabin.images);
   const chips = amenityChips(cabin, t);
   const name = copy?.name ?? cabin.name;
 
@@ -43,6 +46,8 @@ const CabinShowPage: React.FC<CabinShowPageProps> = ({ cabin }) => {
         title={`${name} | ${t.meta.title}`}
         description={copy?.desc ?? t.meta.description}
         path={`/p/${cabin.id}`}
+        image={photo.url}
+        imageAlt={photo.alt}
       />
       <main className="mx-auto max-w-[960px] px-5 py-12 sm:px-8">
         <p className="font-sans text-sm">
@@ -50,18 +55,7 @@ const CabinShowPage: React.FC<CabinShowPageProps> = ({ cabin }) => {
             {t.detail.back}
           </Link>
         </p>
-        <div
-          className="card-photo relative mt-6 h-[320px] bg-cover bg-center sm:h-[440px]"
-          style={{ backgroundImage: `url('${photo.url}')` }}
-          role="img"
-          aria-label={photo.alt}
-        >
-          {photo.isPlaceholder && (
-            <span className="absolute right-[10px] top-[10px] z-[1] bg-[rgba(36,18,9,.65)] px-2 py-[6px] font-sans text-[10px] text-white">
-              {t.detail.tempPhoto}
-            </span>
-          )}
-        </div>
+        <CabinGallery photos={photos} />
         <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <h1 className="m-0 text-[clamp(38px,5vw,60px)] font-medium leading-none tracking-[-0.045em]">
             {name}

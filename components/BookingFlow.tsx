@@ -4,6 +4,8 @@ import { signIn, useSession } from "next-auth/react";
 import type { CabinProps } from "../lib/types";
 import { apiErrorMessage, cabinCopy, useLanguage } from "../lib/i18n";
 import { formatPrice } from "../lib/cabins";
+import AvailabilityCalendar from "./AvailabilityCalendar";
+import { whatsappLink } from "../lib/whatsapp";
 
 type Conflict = { cabinId: string; cabinName: string; unavailableFrom: string; unavailableUntil: string };
 type Props = { cabins: CabinProps[] };
@@ -69,6 +71,7 @@ export default function BookingFlow({ cabins }: Props) {
   // A submitted request replaces the form with a dedicated confirmation
   // screen carrying the booking summary, instead of an inline banner.
   if (status === "success") {
+    const whatsappHref = whatsappLink(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "", requestNumber !== null ? t.whatsapp.messageWithNumber.replace("{number}", String(requestNumber)) : t.whatsapp.messageGeneric);
     const confirmedCabins = cabins.filter((c) => selected.includes(c.id));
     return <section id="booking" className="bg-[#fffaf2] px-5 py-24 sm:px-8">
       <div className="mx-auto max-w-[1050px]">
@@ -88,6 +91,7 @@ export default function BookingFlow({ cabins }: Props) {
             <a href="/customer/bookings" className="bg-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-white">{b.confirmationStatusLink}</a>
             <button type="button" onClick={editRequest} className="border border-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-terra">{b.confirmationAnother}</button>
           </div>
+          {whatsappHref && <div className="mt-6 border-t border-[#4d7b55]/30 pt-5"><p className="m-0 font-sans text-sm text-muted">{t.whatsapp.hint}</p><a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block bg-[#1f8f4e] px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-white">{t.whatsapp.cta}</a></div>}
         </div>
       </div>
     </section>;
@@ -104,7 +108,8 @@ export default function BookingFlow({ cabins }: Props) {
             <div className="grid gap-3 sm:grid-cols-3">{cabins.map((c) => { const copy = cabinCopy(t, c.name); const active = selected.includes(c.id); return <label key={c.id} className={`cursor-pointer border p-4 transition ${active ? "border-terra bg-[#fff0e5] shadow" : "border-cardborder bg-white"}`}><input type="checkbox" className="mr-2 accent-[#9a3f1d]" checked={active} onChange={() => toggleCabin(c.id)}/><strong className="block mt-2 text-xl">{copy?.name || c.name}</strong><span className="font-sans text-xs text-muted">{formatPrice(c.price_per_night)} {t.cabins.perNight}</span></label> })}</div>
           </fieldset>
           <fieldset><legend className="mb-3 font-sans text-xs font-extrabold uppercase tracking-[.14em]">2. {b.chooseDates}</legend>
-            <div className="grid gap-4 sm:grid-cols-2"><label className="font-sans text-sm font-bold">{b.arrival}<input required min={tomorrow} type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); editRequest(); }} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal"/></label><label className="font-sans text-sm font-bold">{b.departure}<input required min={startDate ? addDays(startDate, 1) : addDays(tomorrow, 1)} type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); editRequest(); }} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal"/></label></div>
+            <AvailabilityCalendar cabinIds={cabins.map((c) => c.id)} selectedIds={selected} startDate={startDate} endDate={endDate} onChange={(start, end) => { setStartDate(start); setEndDate(end); editRequest(); }} />
+            <div className="mt-4 grid gap-4 sm:grid-cols-2"><label className="font-sans text-sm font-bold">{b.arrival}<input required min={tomorrow} type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); editRequest(); }} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal"/></label><label className="font-sans text-sm font-bold">{b.departure}<input required min={startDate ? addDays(startDate, 1) : addDays(tomorrow, 1)} type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); editRequest(); }} className="mt-2 block w-full border border-cardborder bg-white p-3 font-normal"/></label></div>
             <p className="font-sans text-xs leading-relaxed text-muted">{b.timesAndBuffer}</p>
           </fieldset>
           <button type="button" disabled={!selected.length || !startDate || !endDate || status === "checking"} onClick={checkAvailability} className="bg-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-white disabled:opacity-40">{status === "checking" ? b.checking : b.check}</button>
