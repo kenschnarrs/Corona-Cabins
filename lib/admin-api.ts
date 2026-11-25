@@ -6,7 +6,7 @@ import { isAdminEmail } from "./admin";
 export async function requireAdmin(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
   if (!session || !isAdminEmail(session.user?.email)) {
-    res.status(401).json({ error: "Unauthorized" });
+    res.status(401).json({ error: "Unauthorized", code: "UNAUTHORIZED" });
     return null;
   }
   return session;
@@ -14,5 +14,5 @@ export async function requireAdmin(req: NextApiRequest, res: NextApiResponse) {
 
 export function methodNotAllowed(res: NextApiResponse, allowed: string[]) {
   res.setHeader("Allow", allowed);
-  return res.status(405).json({ error: "Method not allowed" });
+  return res.status(405).json({ error: "Method not allowed", code: "METHOD_NOT_ALLOWED" });
 }

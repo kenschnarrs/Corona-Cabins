@@ -18,6 +18,10 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  // Localized sign-in screen instead of the English-only NextAuth default.
+  pages: {
+    signIn: "/auth/signin",
+  },
   callbacks: {
     // Any verified Google user may sign in as a customer. Admin privileges are
     // still derived only from the server-side allowlist.

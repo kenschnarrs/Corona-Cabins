@@ -15,7 +15,7 @@ const SiteFooter: React.FC = () => {
       <p className="col-span-full sm:col-span-1">
         {t.footer.copyright}
         <span aria-hidden="true" className="mx-2 opacity-40">·</span>
-        <Link href="/customer/bookings" className="opacity-60 underline-offset-2 hover:opacity-100 hover:underline">My bookings</Link>
+        <Link href="/customer/bookings" className="opacity-60 underline-offset-2 hover:opacity-100 hover:underline">{t.footer.myBookings}</Link>
         <span aria-hidden="true" className="mx-2 opacity-40">·</span>
         <Link href="/inquiries" className="opacity-60 underline-offset-2 hover:opacity-100 hover:underline">{t.footer.admin}</Link>
       </p>

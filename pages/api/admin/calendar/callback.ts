@@ -14,9 +14,9 @@ function redirect(res: NextApiResponse, params: Record<string, string>) {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
-    return res.status(405).json({ error: "Method not allowed." });
+    return res.status(405).json({ error: "Method not allowed.", code: "METHOD_NOT_ALLOWED" });
   }
-  if (typeof req.query.error === "string") return redirect(res, { error: "Google declined the connection." });
+  if (typeof req.query.error === "string") return redirect(res, { error: "GOOGLE_DECLINED" });
   const code = typeof req.query.code === "string" ? req.query.code : null;
   const state = typeof req.query.state === "string" ? req.query.state : null;
   const cookies = Object.fromEntries(
@@ -26,12 +26,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
   );
   if (!code || !state || cookies.calendar_oauth_state !== state) {
-    return redirect(res, { error: "The connect attempt expired or did not match. Try connecting again." });
+    return redirect(res, { error: "CONNECT_EXPIRED" });
   }
   try {
     const tokens = await exchangeCalendarCode(code, calendarCallbackUri(req));
     if (!tokens.grantedScope.split(/\s+/).includes(CALENDAR_SCOPE)) {
-      return redirect(res, { error: "Google did not grant calendar access. Reconnect and keep the calendar permission checked." });
+      return redirect(res, { error: "CALENDAR_SCOPE_MISSING" });
     }
     const existing = await prisma.calendarConnection.findUnique({ where: { id: "primary" } });
     await prisma.calendarConnection.upsert({
@@ -54,6 +54,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return redirect(res, { connected: "1" });
   } catch (error) {
     console.error("Calendar connect failed", error);
-    return redirect(res, { error: error instanceof Error ? error.message : "The connection failed. Try again." });
+    return redirect(res, { error: "CONNECT_FAILED" });
   }
 }

@@ -16,14 +16,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
   const cabinId = String(req.query.id);
   const cabin = await prisma.cabin.findUnique({ where: { id: cabinId }, include: { images: { orderBy: { sort_order: "asc" } } } });
-  if (!cabin) return res.status(404).json({ error: "Cabin not found." });
+  if (!cabin) return res.status(404).json({ error: "Cabin not found.", code: "CABIN_NOT_FOUND" });
   const position = Number(req.body.position);
   const makePrimary = req.body.makePrimary === true;
   if (!Number.isInteger(position) || position < 0 || position > cabin.images.length)
-    return res.status(400).json({ error: "Choose a valid photo position." });
+    return res.status(400).json({ error: "Choose a valid photo position.", code: "INVALID_POSITION" });
   let image;
   try { image = validateImageUpload(req.body.dataUrl, req.body.contentType); }
-  catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image." }); }
+  catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : "Invalid image.", code: "INVALID_IMAGE" }); }
   const blob = await put(`cabins/${cabinId}/${safeBaseName(req.body.filename)}.${image.extension}`, image.bytes, {
     access: "public", contentType: image.contentType, addRandomSuffix: true,
   });

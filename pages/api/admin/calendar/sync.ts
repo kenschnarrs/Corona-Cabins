@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!(await requireAdmin(req, res))) return;
   if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
   const connection = await prisma.calendarConnection.findUnique({ where: { id: "primary" } });
-  if (!connection?.calendarId) return res.status(409).json({ error: "Connect Google and set the calendar ID first." });
+  if (!connection?.calendarId) return res.status(409).json({ error: "Connect Google and set the calendar ID first.", code: "CALENDAR_NOT_CONFIGURED" });
   const result = await syncAllScheduledBookings();
   return res.json(result);
 }
