@@ -21,6 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const customerEmail = customerAuth.email;
   const customerPhone = clean(req.body.customerPhone, 40);
   const notes = clean(req.body.notes, 2000);
+  // Guest emails go out in the site language the guest booked in.
+  const locale = req.body.locale === "en" ? "en" : "es";
   if (!cabinIds.length || cabinIds.length > 10 || new Set(cabinIds).size !== cabinIds.length) return res.status(400).json({ error: "Choose at least one cabin." });
   if (customerName.length < 2 || !emailPattern.test(customerEmail) || customerPhone.length < 7) return res.status(400).json({ error: "Enter your name, a valid email, and a phone number." });
   try {
@@ -37,12 +39,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           customer_name: customerName,
           customer_email: customerEmail,
           customer_phone: customerPhone,
+          locale,
           notes,
           cabins: { create: cabins.map((cabin) => ({ cabinId: cabin.id, startDate, endDate, header: `Booking request for ${cabin.name}`, body: notes })) },
         },
-        select: { id: true },
+        select: { id: true, request_number: true },
       });
-      return { kind: "created" as const, id: inquiry.id, cabinNames: cabins.map((cabin) => cabin.name) };
+      return { kind: "created" as const, id: inquiry.id, requestNumber: inquiry.request_number, cabinNames: cabins.map((cabin) => cabin.name) };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     if (result.kind === "conflict") return res.status(409).json({ error: "The requested stay is no longer available.", conflicts: result.conflicts });
     if (result.kind === "error") return res.status(400).json({ error: result.error });
@@ -51,9 +54,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       customerEmail,
       customerPhone,
       notes,
+      locale,
+      requestNumber: result.requestNumber,
       stays: result.cabinNames.map((cabinName) => ({ cabinName, startDate, endDate })),
     });
-    return res.status(201).json({ ok: true, requestId: result.id });
+    return res.status(201).json({ ok: true, requestId: result.id, requestNumber: result.requestNumber });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return res.status(409).json({ error: "Availability changed while you submitted. Please check the dates again." });
     if (error instanceof Error && ["Choose valid arrival and departure dates.", "Departure must be after arrival.", "Arrival cannot be in the past.", "Dates must be within the next two years."].includes(error.message)) return res.status(400).json({ error: error.message });

@@ -18,6 +18,8 @@ const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const DEFAULT_FROM = "Cabañas Corona <onboarding@resend.dev>";
 const SEND_TIMEOUT_MS = 8000;
 
+export type EmailLocale = "es" | "en";
+
 export type EmailStay = {
   cabinName: string;
   startDate: Date;
@@ -29,8 +31,19 @@ export type EmailBooking = {
   customerEmail: string;
   customerPhone?: string | null;
   notes?: string | null;
+  /**
+   * Guest's site language at booking time. Guest emails go out in this one
+   * language rather than bilingual. Defaults to Spanish, the site's default.
+   */
+  locale?: EmailLocale;
+  /** Short sequential number guests quote, e.g. 1042 for "Request #1042". */
+  requestNumber?: number | null;
   stays: EmailStay[];
 };
+
+export function emailLocale(booking: EmailBooking): EmailLocale {
+  return booking.locale === "en" ? "en" : "es";
+}
 
 export type EmailMessage = {
   to: string[];
@@ -118,111 +131,96 @@ function linkHtml(url: string, label: string): string {
   return url ? `<p><a href="${escapeHtml(url)}">${escapeHtml(label)}</a></p>` : "";
 }
 
-export function buildRequestReceivedEmail(booking: EmailBooking): EmailMessage {
-  const name = escapeHtml(booking.customerName);
+type GuestCopy = {
+  greeting: string;
+  body: string;
+  link: string;
+  textLink: string;
+  subject: string;
+};
+
+function buildGuestEmail(booking: EmailBooking, copy: GuestCopy): EmailMessage {
+  const locale = emailLocale(booking);
   const statusUrl = customerBookingsUrl();
+  const reference = typeof booking.requestNumber === "number"
+    ? (locale === "es" ? `Solicitud #${booking.requestNumber}` : `Request #${booking.requestNumber}`)
+    : "";
   const html = page(`
-    <p>Hola ${name},</p>
-    <p>Recibimos tu solicitud de reserva. La revisaremos y te confirmaremos por correo.</p>
-    ${staysHtml(booking, "es")}
-    ${linkHtml(statusUrl, "Ver el estado de tu reserva")}
-    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
-    <p>Hi ${name},</p>
-    <p>We received your booking request. We will review it and confirm by email.</p>
-    ${staysHtml(booking, "en")}
-    ${linkHtml(statusUrl, "View your booking status")}
+    <p>${copy.greeting} ${escapeHtml(booking.customerName)},</p>
+    <p>${copy.body}</p>
+    ${reference ? `<p><strong>${reference}</strong></p>` : ""}
+    ${staysHtml(booking, locale)}
+    ${linkHtml(statusUrl, copy.link)}
   `);
   const text = [
-    `Hola ${booking.customerName},`,
+    `${copy.greeting} ${booking.customerName},`,
     "",
-    "Recibimos tu solicitud de reserva. La revisaremos y te confirmaremos por correo.",
-    ...stayLines(booking, "es"),
-    statusUrl ? `Estado de tu reserva: ${statusUrl}` : "",
-    "",
-    `Hi ${booking.customerName},`,
-    "",
-    "We received your booking request. We will review it and confirm by email.",
-    ...stayLines(booking, "en"),
-    statusUrl ? `Your booking status: ${statusUrl}` : "",
+    copy.body,
+    reference,
+    ...stayLines(booking, locale),
+    statusUrl ? copy.textLink : "",
   ].filter(Boolean).join("\n");
-  return {
-    to: [booking.customerEmail],
-    subject: "Recibimos tu solicitud de reserva / We received your booking request",
-    html,
-    text,
-  };
+  return { to: [booking.customerEmail], subject: copy.subject, html, text };
+}
+
+export function buildRequestReceivedEmail(booking: EmailBooking): EmailMessage {
+  const locale = emailLocale(booking);
+  const statusUrl = customerBookingsUrl();
+  return buildGuestEmail(booking, locale === "es"
+    ? {
+        greeting: "Hola",
+        body: "Recibimos tu solicitud de reserva. La revisaremos y te confirmaremos por correo.",
+        link: "Ver el estado de tu reserva",
+        textLink: `Estado de tu reserva: ${statusUrl}`,
+        subject: "Recibimos tu solicitud de reserva",
+      }
+    : {
+        greeting: "Hi",
+        body: "We received your booking request. We will review it and confirm by email.",
+        link: "View your booking status",
+        textLink: `Your booking status: ${statusUrl}`,
+        subject: "We received your booking request",
+      });
 }
 
 export function buildScheduledEmail(booking: EmailBooking): EmailMessage {
-  const name = escapeHtml(booking.customerName);
+  const locale = emailLocale(booking);
   const statusUrl = customerBookingsUrl();
-  const timesEs = `Entrada a la ${formatHour(CHECK_IN_HOUR, "es")}, salida a las ${formatHour(CHECK_OUT_HOUR, "es")}.`;
-  const timesEn = `Check-in at ${formatHour(CHECK_IN_HOUR, "en")}, check-out at ${formatHour(CHECK_OUT_HOUR, "en")}.`;
-  const html = page(`
-    <p>Hola ${name},</p>
-    <p>Tu reserva está confirmada. ${timesEs}</p>
-    ${staysHtml(booking, "es")}
-    ${linkHtml(statusUrl, "Ver tu reserva")}
-    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
-    <p>Hi ${name},</p>
-    <p>Your booking is confirmed. ${timesEn}</p>
-    ${staysHtml(booking, "en")}
-    ${linkHtml(statusUrl, "View your booking")}
-  `);
-  const text = [
-    `Hola ${booking.customerName},`,
-    "",
-    `Tu reserva está confirmada. ${timesEs}`,
-    ...stayLines(booking, "es"),
-    statusUrl ? `Tu reserva: ${statusUrl}` : "",
-    "",
-    `Hi ${booking.customerName},`,
-    "",
-    `Your booking is confirmed. ${timesEn}`,
-    ...stayLines(booking, "en"),
-    statusUrl ? `Your booking: ${statusUrl}` : "",
-  ].filter(Boolean).join("\n");
-  return {
-    to: [booking.customerEmail],
-    subject: "Tu reserva está confirmada / Your booking is confirmed",
-    html,
-    text,
-  };
+  return buildGuestEmail(booking, locale === "es"
+    ? {
+        greeting: "Hola",
+        body: `Tu reserva está confirmada. Entrada a la ${formatHour(CHECK_IN_HOUR, "es")}, salida a las ${formatHour(CHECK_OUT_HOUR, "es")}.`,
+        link: "Ver tu reserva",
+        textLink: `Tu reserva: ${statusUrl}`,
+        subject: "Tu reserva está confirmada",
+      }
+    : {
+        greeting: "Hi",
+        body: `Your booking is confirmed. Check-in at ${formatHour(CHECK_IN_HOUR, "en")}, check-out at ${formatHour(CHECK_OUT_HOUR, "en")}.`,
+        link: "View your booking",
+        textLink: `Your booking: ${statusUrl}`,
+        subject: "Your booking is confirmed",
+      });
 }
 
 export function buildCancelledEmail(booking: EmailBooking): EmailMessage {
-  const name = escapeHtml(booking.customerName);
+  const locale = emailLocale(booking);
   const statusUrl = customerBookingsUrl();
-  const html = page(`
-    <p>Hola ${name},</p>
-    <p>Tu reserva fue cancelada. Si no esperabas esto, responde a este correo.</p>
-    ${staysHtml(booking, "es")}
-    ${linkHtml(statusUrl, "Ver el estado de tu reserva")}
-    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
-    <p>Hi ${name},</p>
-    <p>Your booking was cancelled. If you were not expecting this, reply to this email.</p>
-    ${staysHtml(booking, "en")}
-    ${linkHtml(statusUrl, "View your booking status")}
-  `);
-  const text = [
-    `Hola ${booking.customerName},`,
-    "",
-    "Tu reserva fue cancelada. Si no esperabas esto, responde a este correo.",
-    ...stayLines(booking, "es"),
-    statusUrl ? `Estado de tu reserva: ${statusUrl}` : "",
-    "",
-    `Hi ${booking.customerName},`,
-    "",
-    "Your booking was cancelled. If you were not expecting this, reply to this email.",
-    ...stayLines(booking, "en"),
-    statusUrl ? `Your booking status: ${statusUrl}` : "",
-  ].filter(Boolean).join("\n");
-  return {
-    to: [booking.customerEmail],
-    subject: "Tu reserva fue cancelada / Your booking was cancelled",
-    html,
-    text,
-  };
+  return buildGuestEmail(booking, locale === "es"
+    ? {
+        greeting: "Hola",
+        body: "Tu reserva fue cancelada. Si no esperabas esto, responde a este correo.",
+        link: "Ver el estado de tu reserva",
+        textLink: `Estado de tu reserva: ${statusUrl}`,
+        subject: "Tu reserva fue cancelada",
+      }
+    : {
+        greeting: "Hi",
+        body: "Your booking was cancelled. If you were not expecting this, reply to this email.",
+        link: "View your booking status",
+        textLink: `Your booking status: ${statusUrl}`,
+        subject: "Your booking was cancelled",
+      });
 }
 
 export function buildAdminNewRequestEmail(booking: EmailBooking): EmailMessage | null {
@@ -231,6 +229,7 @@ export function buildAdminNewRequestEmail(booking: EmailBooking): EmailMessage |
   const notes = booking.notes?.trim();
   const rows = [
     ["Guest", booking.customerName],
+    ["Request", typeof booking.requestNumber === "number" ? `#${booking.requestNumber}` : ""],
     ["Email", booking.customerEmail],
     ["Phone", booking.customerPhone ?? ""],
     ...booking.stays.map((stay) => [

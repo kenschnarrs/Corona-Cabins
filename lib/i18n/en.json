@@ -112,7 +112,11 @@
     "requestNote": "Submitting sends a booking request. It is not confirmed until a Corona Cabins admin reviews it.",
     "submit": "Submit booking request",
     "submitting": "Submitting...",
-    "success": "Request {id} was received. An admin will contact you to confirm.",
+    "confirmationTitle": "We received your request!",
+    "confirmationBody": "A Cabañas Corona admin will review it and confirm by email. Keep this summary of your stay.",
+    "confirmationId": "Request number",
+    "confirmationStatusLink": "View your booking status",
+    "confirmationAnother": "Make another request",
     "error": "We could not check availability. Please edit the request and try again."
   }
 }
