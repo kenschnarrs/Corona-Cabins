@@ -10,17 +10,18 @@
 // and /admin/calendar offers a manual re-sync.
 //
 // Time zone: stay dates are stored at the check-in/check-out hours (13:00 /
-// 12:00) as if they were local wall time (see parseStayDates). The cabins use
-// Eastern, and the Google calendar itself is stuck on America/Chicago because
-// Google's admin re-verification gate blocks changing it - so every event
-// carries America/New_York explicitly instead of relying on the calendar's
-// zone. If the cabin zone ever needs to differ, CABIN_TIME_ZONE is the one
-// line to change.
+// 12:00) as if they were local wall time (see parseStayDates). The cabins are
+// in Carichi, Chihuahua, which stays on UTC-6 year-round (America/Chihuahua),
+// and the Google calendar itself is stuck on America/Chicago because Google's
+// admin re-verification gate blocks changing it - so every event carries
+// America/Chihuahua explicitly instead of relying on the calendar's zone. If
+// the cabin zone ever needs to differ, CABIN_TIME_ZONE is the one line to
+// change.
 import type { NextApiRequest } from "next";
 import prisma from "./prisma";
 import type { StoredBookingStatus } from "./booking";
 
-export const CABIN_TIME_ZONE = "America/New_York";
+export const CABIN_TIME_ZONE = "America/Chihuahua";
 export const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events";
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
