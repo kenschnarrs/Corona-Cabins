@@ -54,7 +54,7 @@ export default function AvailabilityCalendar({ cabinIds, selectedIds, startDate,
 
   const inStay = (day: string) => !!startDate && !!endDate && day >= startDate && day <= endDate;
   return <div className="border border-cardborder bg-white p-4" data-testid="availability-calendar">
-    <div className="flex items-baseline justify-between gap-3">
+    <div className="flex flex-wrap items-baseline justify-between gap-3">
       <h4 className="m-0 font-sans text-xs font-extrabold uppercase tracking-[.14em]">{a.heading}</h4>
       <div className="flex items-center gap-1 font-sans">
         <button type="button" aria-label={a.prevMonth} disabled={atCurrentMonth} onClick={() => shiftMonth(-1)} className="h-9 w-9 border border-cardborder text-lg disabled:opacity-30">‹</button>

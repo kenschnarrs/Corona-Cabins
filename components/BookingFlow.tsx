@@ -102,7 +102,7 @@ export default function BookingFlow({ cabins }: Props) {
       <p className="mb-3 font-sans text-xs font-bold uppercase tracking-[.22em] text-eyebrow">{b.eyebrow}</p>
       <h2 className="m-0 max-w-[760px] text-[clamp(42px,6vw,72px)] font-medium leading-[.98] tracking-[-.045em]">{b.heading}</h2>
       <p className="mt-5 max-w-[690px] leading-relaxed text-muted">{b.intro}</p>
-      <form onSubmit={submit} className="mt-10 grid gap-7 lg:grid-cols-[1.2fr_.8fr]">
+      <form onSubmit={submit} className="mt-10 grid grid-cols-1 gap-7 lg:grid-cols-[1.2fr_.8fr]">
         <div className="space-y-7">
           <fieldset><legend className="mb-3 font-sans text-xs font-extrabold uppercase tracking-[.14em]">1. {b.chooseCabins}</legend>
             <div className="grid gap-3 sm:grid-cols-3">{cabins.map((c) => { const copy = cabinCopy(t, c.name); const active = selected.includes(c.id); return <label key={c.id} className={`cursor-pointer border p-4 transition ${active ? "border-terra bg-[#fff0e5] shadow" : "border-cardborder bg-white"}`}><input type="checkbox" className="mr-2 accent-[#9a3f1d]" checked={active} onChange={() => toggleCabin(c.id)}/><strong className="block mt-2 text-xl">{copy?.name || c.name}</strong><span className="font-sans text-xs text-muted">{formatPrice(c.price_per_night)} {t.cabins.perNight}</span></label> })}</div>
