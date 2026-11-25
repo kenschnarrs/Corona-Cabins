@@ -37,7 +37,8 @@ export default function AvailabilityCalendar({ cabinIds, selectedIds, startDate,
 
   const booked = useMemo(() => bookedDays(blocked ?? {}, selectedIds, cabinIds), [blocked, selectedIds, cabinIds]);
   const locale = lang === "es" ? "es-MX" : "en-US";
-  const monthLabel = new Intl.DateTimeFormat(locale, { timeZone: "UTC", month: "long", year: "numeric" }).format(new Date(Date.UTC(month.year, month.month, 1)));
+  const rawMonth = new Intl.DateTimeFormat(locale, { timeZone: "UTC", month: "long", year: "numeric" }).format(new Date(Date.UTC(month.year, month.month, 1)));
+  const monthLabel = rawMonth.charAt(0).toUpperCase() + rawMonth.slice(1).replace(/ De /, " de ");
   const weekdays = Array.from({ length: 7 }, (_, i) => new Intl.DateTimeFormat(locale, { timeZone: "UTC", weekday: "short" }).format(new Date(Date.UTC(2023, 0, 1 + i))));
   const firstWeekday = new Date(Date.UTC(month.year, month.month, 1)).getUTCDay();
   const daysInMonth = new Date(Date.UTC(month.year, month.month + 1, 0)).getUTCDate();
@@ -57,7 +58,7 @@ export default function AvailabilityCalendar({ cabinIds, selectedIds, startDate,
       <h4 className="m-0 font-sans text-xs font-extrabold uppercase tracking-[.14em]">{a.heading}</h4>
       <div className="flex items-center gap-1 font-sans">
         <button type="button" aria-label={a.prevMonth} disabled={atCurrentMonth} onClick={() => shiftMonth(-1)} className="h-9 w-9 border border-cardborder text-lg disabled:opacity-30">‹</button>
-        <span className="min-w-[130px] text-center text-sm font-bold capitalize" aria-live="polite">{monthLabel}</span>
+        <span className="min-w-[130px] text-center text-sm font-bold" aria-live="polite">{monthLabel}</span>
         <button type="button" aria-label={a.nextMonth} onClick={() => shiftMonth(1)} className="h-9 w-9 border border-cardborder text-lg">›</button>
       </div>
     </div>

@@ -151,6 +151,9 @@ assert.match(read("pages/api/bookings/calendar.ts"), /req\.method !== "GET"/, "c
 assert.doesNotMatch(read("pages/api/bookings/calendar.ts"), /requireAdmin|session/, "calendar endpoint is public");
 const confirmApi = read("pages/api/admin/bookings/email-confirm.ts");
 assert.match(confirmApi, /verifyConfirmToken/, "confirm endpoint verifies the signed token");
+assert.match(confirmApi, /if \(!\(await requireAdmin\(req, res\)\)\) return;/, "confirm endpoint requires a signed-in admin before anything else");
+assert.ok(confirmApi.indexOf("requireAdmin(req, res)") < confirmApi.indexOf("verifyConfirmToken("), "admin check runs before the token is even read");
+assert.match(read("pages/admin/confirm.tsx"), /sessionStatus === "unauthenticated"/, "confirm page asks signed-out visitors to sign in first");
 assert.match(confirmApi, /changeBookingStatus\(inquiry\.id, "SCHEDULED"\)/, "confirm uses the shared status change (availability recheck, calendar, guest email)");
 assert.match(confirmApi, /inquiry\.status !== "PENDING"/, "only pending requests can be approved from email");
 assert.match(confirmApi, /req\.method === "GET"\) return res\.json/, "GET only describes the request");

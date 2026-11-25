@@ -315,7 +315,9 @@
       "loading": "Cargando solicitud...",
       "loadError": "No pudimos cargar la solicitud. Inténtalo de nuevo.",
       "confirmError": "No se pudo confirmar la reserva.",
-      "noToken": "Falta el enlace de aprobación. Usa el botón del correo de alerta."
+      "noToken": "Falta el enlace de aprobación. Usa el botón del correo de alerta.",
+      "signInBody": "Inicia sesión con tu cuenta de administrador para revisar y confirmar esta solicitud.",
+      "signInCta": "Iniciar sesión con Google"
     }
   },
   "availability": {

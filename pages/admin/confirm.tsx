@@ -1,5 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import Layout from "../../components/Layout";
 import Seo from "../../components/Seo";
@@ -13,9 +14,10 @@ export default function ConfirmFromEmail() {
   const { t, lang } = useLanguage();
   const c = t.admin.confirmEmail;
   const router = useRouter();
+  const { status: sessionStatus } = useSession();
   const token = typeof router.query.token === "string" ? router.query.token : "";
   const [summary, setSummary] = React.useState<Summary | null>(null);
-  const [state, setState] = React.useState<"loading" | "ready" | "confirming" | "done" | "already" | "error">("loading");
+  const [state, setState] = React.useState<"loading" | "ready" | "confirming" | "done" | "already" | "signin" | "error">("loading");
   const [error, setError] = React.useState("");
   const [calendarWarning, setCalendarWarning] = React.useState("");
   const locale = lang === "es" ? "es-MX" : "en-US";
@@ -23,7 +25,8 @@ export default function ConfirmFromEmail() {
   const statusLabel = (value: string) => (t.statuses as Record<string, string>)[value] ?? value;
 
   React.useEffect(() => {
-    if (!router.isReady) return;
+    if (!router.isReady || sessionStatus === "loading") return;
+    if (sessionStatus === "unauthenticated") { setState("signin"); return; }
     if (!token) { setState("error"); setError(c.noToken); return; }
     let cancelled = false;
     fetch(`/api/admin/bookings/email-confirm?token=${encodeURIComponent(token)}`)
@@ -36,7 +39,7 @@ export default function ConfirmFromEmail() {
       .catch(() => { if (!cancelled) { setState("error"); setError(c.loadError); } });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.isReady, token]);
+  }, [router.isReady, token, sessionStatus]);
 
   async function confirm() {
     setState("confirming"); setError("");
@@ -58,6 +61,7 @@ export default function ConfirmFromEmail() {
     <p className="font-sans text-xs font-bold uppercase tracking-[.18em] text-eyebrow">{c.eyebrow}</p>
     <h1 className="m-0 text-[clamp(32px,5vw,48px)] font-medium leading-none tracking-[-.03em]">{c.heading}</h1>
     {state === "loading" && <p className="mt-6 text-muted">{c.loading}</p>}
+    {state === "signin" && <><p className="mt-6 leading-relaxed text-muted">{c.signInBody}</p><button type="button" onClick={() => signIn("google", { callbackUrl: router.asPath })} className="mt-4 bg-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-white">{c.signInCta}</button></>}
     {error && <p role="alert" className="mt-6 border border-[#b55332] bg-[#fff0e8] p-4 font-sans font-bold">{error}</p>}
     {summary && <>
       <p className="mt-5 leading-relaxed text-muted">{c.intro}</p>

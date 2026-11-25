@@ -315,7 +315,9 @@
       "loading": "Loading request...",
       "loadError": "We could not load the request. Please try again.",
       "confirmError": "The booking could not be confirmed.",
-      "noToken": "The approval link is missing. Use the button in the alert email."
+      "noToken": "The approval link is missing. Use the button in the alert email.",
+      "signInBody": "Sign in with your admin account to review and confirm this request.",
+      "signInCta": "Sign in with Google"
     }
   },
   "availability": {

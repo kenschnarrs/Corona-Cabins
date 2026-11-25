@@ -262,14 +262,14 @@ export function buildAdminNewRequestEmail(booking: EmailBooking): EmailMessage |
     <table cellpadding="4" style="border-collapse:collapse;">${rows
       .map(([label, value]) => `<tr><td style="vertical-align:top;color:#6b7280;">${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`)
       .join("")}</table>
-    ${confirmUrl ? `<p><a href="${escapeHtml(confirmUrl)}" style="display:inline-block;background:#a94422;color:#ffffff;padding:10px 18px;text-decoration:none;font-weight:bold;">Review and approve</a></p><p style="font-size:13px;color:#6b7280;">Opens a confirmation page. Nothing changes until you press Confirm there. The link expires in 7 days.</p>` : ""}
+    ${confirmUrl ? `<p><a href="${escapeHtml(confirmUrl)}" style="display:inline-block;background:#a94422;color:#ffffff;padding:10px 18px;text-decoration:none;font-weight:bold;">Review and approve</a></p><p style="font-size:13px;color:#6b7280;">Opens a confirmation page (sign in with your admin Google account). Nothing changes until you press Confirm there. The link expires in 7 days.</p>` : ""}
     ${linkHtml(adminBookingsUrl(), "Review in the admin dashboard")}
   `);
   const text = [
     "New booking request.",
     "",
     ...rows.map(([label, value]) => `${label}: ${value}`),
-    confirmUrl ? `Review and approve (nothing changes until you press Confirm; expires in 7 days): ${confirmUrl}` : "",
+    confirmUrl ? `Review and approve (admin sign-in required; nothing changes until you press Confirm; expires in 7 days): ${confirmUrl}` : "",
     adminBookingsUrl() ? `Admin dashboard: ${adminBookingsUrl()}` : "",
   ].filter(Boolean).join("\n");
   return {

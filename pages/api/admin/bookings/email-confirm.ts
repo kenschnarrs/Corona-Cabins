@@ -1,16 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../../lib/prisma";
-import { methodNotAllowed } from "../../../../lib/admin-api";
+import { methodNotAllowed, requireAdmin } from "../../../../lib/admin-api";
 import { effectiveBookingStatus } from "../../../../lib/booking";
 import { changeBookingStatus } from "../../../../lib/booking-admin";
 import { verifyConfirmToken } from "../../../../lib/email-actions";
 
-// Confirm-from-email. The signed token in the admin alert email is the
-// credential (see lib/email-actions.ts). GET only describes the request, so
-// mail scanners that prefetch links change nothing; POST confirms.
+// Confirm-from-email. Two things are required: a signed-in admin session
+// (the allowlist, same as the dashboard) AND the signed token from the alert
+// email, which names the one request this link may act on. GET only describes
+// the request, so mail scanners that prefetch the link change nothing; only an
+// explicit POST (the Confirm button) changes status.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET" && req.method !== "POST") return methodNotAllowed(res, ["GET", "POST"]);
   res.setHeader("Cache-Control", "no-store");
+  if (!(await requireAdmin(req, res))) return;
   const token = req.method === "GET" ? req.query.token : req.body?.token;
   const verified = verifyConfirmToken(token);
   if (!verified.ok) return res.status(verified.code === "CONFIRM_LINK_EXPIRED" ? 410 : 400).json({ error: "This approval link is not valid.", code: verified.code });

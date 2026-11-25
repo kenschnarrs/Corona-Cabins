@@ -1,11 +1,11 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-// Signed, expiring links that let an admin approve one booking request
-// straight from the alert email. The token carries only the request id and an
-// expiry, signed with NEXTAUTH_SECRET (protected env var, never in source).
-// It can do exactly one thing: move that PENDING request to SCHEDULED, through
-// the same checks as the dashboard. Links are only ever emailed to the
-// ADMIN_ALERT_EMAILS addresses.
+// Signed, expiring links that take an admin from the alert email straight to
+// one booking request's confirm page. The token carries only the request id
+// and an expiry, signed with NEXTAUTH_SECRET (protected env var, never in
+// source). It is NOT enough to change anything on its own: the confirm API also
+// requires a signed-in admin session and an explicit Confirm press, so a
+// forwarded or prefetched link cannot approve a booking.
 
 export const CONFIRM_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const PURPOSE = "confirm-booking";
