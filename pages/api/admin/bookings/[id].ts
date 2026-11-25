@@ -3,6 +3,7 @@ import { BookingStatus } from "@prisma/client";
 import prisma from "../../../../lib/prisma";
 import { requireAdmin, methodNotAllowed } from "../../../../lib/admin-api";
 import { effectiveBookingStatus, findBookingConflicts, isCancelledStatus, MANAGEMENT_TARGET_STATUSES, managementTransitionError } from "../../../../lib/booking";
+import { syncBookingCalendarTransition } from "../../../../lib/google-calendar";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!(await requireAdmin(req, res))) return;
@@ -25,5 +26,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
   const booking = await prisma.inquiry.update({ where: { id: current.id }, data: { status } });
-  return res.json(booking);
+  // Confirmed bookings land on the admin Google Calendar; pending and
+  // cancelled bookings come off it. A calendar outage never fails the booking
+  // change itself - the outcome is reported so the admin can re-sync.
+  const calendarSync = await syncBookingCalendarTransition(current.id, status);
+  return res.json({ ...booking, calendarSync });
 }
