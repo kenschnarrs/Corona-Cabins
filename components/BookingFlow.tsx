@@ -9,7 +9,7 @@ type Conflict = { cabinId: string; cabinName: string; unavailableFrom: string; u
 type Props = { cabins: CabinProps[] };
 
 export default function BookingFlow({ cabins }: Props) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
   const b = t.booking;
@@ -23,7 +23,9 @@ export default function BookingFlow({ cabins }: Props) {
   const [status, setStatus] = useState<"idle" | "checking" | "available" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
+  const [requestId, setRequestId] = useState("");
   const today = new Date().toISOString().slice(0, 10);
+  const formatDisplayDate = (value: string) => new Intl.DateTimeFormat(lang === "es" ? "es-MX" : "en-US", { timeZone: "UTC", weekday: "long", year: "numeric", month: "long", day: "numeric" }).format(new Date(`${value}T00:00:00Z`));
   const nights = useMemo(() => startDate && endDate ? Math.max(0, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000)) : 0, [startDate, endDate]);
   const total = cabins.filter((c) => selected.includes(c.id)).reduce((sum, c) => sum + Number(c.price_per_night) * nights, 0);
 
@@ -53,10 +55,37 @@ export default function BookingFlow({ cabins }: Props) {
     if (!session?.user?.email) { await signIn("google", { callbackUrl: `${router.asPath.split("#")[0]}#booking` }); return; }
     if (status !== "available") return checkAvailability();
     setStatus("submitting");
-    const response = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cabinIds: selected, startDate, endDate, customerName, customerEmail, customerPhone, notes, website: "" }) });
+    const response = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cabinIds: selected, startDate, endDate, customerName, customerEmail, customerPhone, notes, website: "", locale: lang }) });
     const data = await response.json();
     if (!response.ok) { setStatus("error"); setMessage(data.error || b.error); setConflicts(data.conflicts || []); return; }
-    setStatus("success"); setMessage(b.success.replace("{id}", data.requestId));
+    setRequestId(data.requestId); setMessage(""); setConflicts([]); setStatus("success");
+  }
+
+  // A submitted request replaces the form with a dedicated confirmation
+  // screen carrying the booking summary, instead of an inline banner.
+  if (status === "success") {
+    const confirmedCabins = cabins.filter((c) => selected.includes(c.id));
+    return <section id="booking" className="bg-[#fffaf2] px-5 py-24 sm:px-8">
+      <div className="mx-auto max-w-[1050px]">
+        <div role="status" className="border border-[#4d7b55] bg-[#eef8ef] p-8 shadow-[0_18px_50px_rgba(73,39,19,.08)]">
+          <h2 className="m-0 text-[clamp(32px,4vw,48px)] font-medium leading-[1.05] tracking-[-.03em]">{b.confirmationTitle}</h2>
+          <p className="mt-4 max-w-[690px] leading-relaxed">{b.confirmationBody}</p>
+          <dl className="mt-6 grid gap-x-8 gap-y-3 font-sans text-sm sm:grid-cols-2">
+            <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.confirmationId}</dt><dd className="m-0 mt-1 break-all">{requestId}</dd></div>
+            <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.chooseCabins}</dt><dd className="m-0 mt-1">{confirmedCabins.map((c) => cabinCopy(t, c.name)?.name || c.name).join(", ")}</dd></div>
+            <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.arrival}</dt><dd className="m-0 mt-1">{formatDisplayDate(startDate)}</dd></div>
+            <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.departure}</dt><dd className="m-0 mt-1">{formatDisplayDate(endDate)}</dd></div>
+            {nights > 0 && <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.estimated}</dt><dd className="m-0 mt-1">{nights} {nights === 1 ? b.night : b.nights} · {formatPrice(total)}</dd></div>}
+            <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.name}</dt><dd className="m-0 mt-1">{customerName}</dd></div>
+            <div><dt className="text-xs font-extrabold uppercase tracking-[.14em] text-muted">{b.email}</dt><dd className="m-0 mt-1 break-all">{session?.user?.email || customerEmail}</dd></div>
+          </dl>
+          <div className="mt-8 flex flex-wrap gap-4">
+            <a href="/customer/bookings" className="bg-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-white">{b.confirmationStatusLink}</a>
+            <button type="button" onClick={editRequest} className="border border-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-terra">{b.confirmationAnother}</button>
+          </div>
+        </div>
+      </div>
+    </section>;
   }
 
   return <section id="booking" className="bg-[#fffaf2] px-5 py-24 sm:px-8">
@@ -74,7 +103,7 @@ export default function BookingFlow({ cabins }: Props) {
             <p className="font-sans text-xs leading-relaxed text-muted">{b.timesAndBuffer}</p>
           </fieldset>
           <button type="button" disabled={!selected.length || !startDate || !endDate || status === "checking"} onClick={checkAvailability} className="bg-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-white disabled:opacity-40">{status === "checking" ? b.checking : b.check}</button>
-          {(message || conflicts.length > 0) && <div role="status" className={`border p-5 ${status === "available" || status === "success" ? "border-[#4d7b55] bg-[#eef8ef]" : "border-[#b55332] bg-[#fff0e8]"}`}><p className="m-0 font-sans font-bold">{message}</p>{conflicts.map((c) => <p className="mb-0 font-sans text-sm" key={c.cabinId}><strong>{c.cabinName}</strong>: {b.conflictDates.replace("{start}", c.unavailableFrom).replace("{end}", c.unavailableUntil)}</p>)}{status === "error" && <button type="button" onClick={editRequest} className="mt-4 font-sans text-xs font-extrabold uppercase tracking-[.1em] text-terra underline">{b.edit}</button>}</div>}
+          {(message || conflicts.length > 0) && <div role="status" className={`border p-5 ${status === "available" ? "border-[#4d7b55] bg-[#eef8ef]" : "border-[#b55332] bg-[#fff0e8]"}`}><p className="m-0 font-sans font-bold">{message}</p>{conflicts.map((c) => <p className="mb-0 font-sans text-sm" key={c.cabinId}><strong>{c.cabinName}</strong>: {b.conflictDates.replace("{start}", c.unavailableFrom).replace("{end}", c.unavailableUntil)}</p>)}{status === "error" && <button type="button" onClick={editRequest} className="mt-4 font-sans text-xs font-extrabold uppercase tracking-[.1em] text-terra underline">{b.edit}</button>}</div>}
         </div>
         <aside className="border border-cardborder bg-card p-6 shadow-[0_18px_50px_rgba(73,39,19,.08)]">
           <h3 className="mt-0 text-3xl">3. {b.details}</h3>

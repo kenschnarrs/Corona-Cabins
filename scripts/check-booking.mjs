@@ -12,6 +12,9 @@ assert.match(api, /Serializable/);
 assert.match(api, /status\(409\)/);
 assert.match(ui, /conflicts\.map/);
 assert.match(ui, /Edit booking|b\.edit/);
+assert.match(ui, /locale: lang/, "booking request carries the guest's site language");
+assert.match(ui, /confirmationTitle/, "submit lands on a dedicated confirmation screen, not an inline banner");
+assert.match(ui, /if \(status === "success"\)/, "confirmation screen replaces the form after submit");
 console.log("booking-flow checks passed");
 
 assert.match(booking, /now >= endDate.*COMPLETED/);

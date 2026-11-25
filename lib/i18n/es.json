@@ -112,7 +112,11 @@
     "requestNote": "Al enviar creas una solicitud de reserva. No queda confirmada hasta que la revise un administrador de Cabañas Corona.",
     "submit": "Enviar solicitud",
     "submitting": "Enviando...",
-    "success": "Recibimos la solicitud {id}. Un administrador te contactará para confirmar.",
+    "confirmationTitle": "¡Recibimos tu solicitud!",
+    "confirmationBody": "Un administrador de Cabañas Corona la revisará y te confirmará por correo. Guarda este resumen de tu estancia.",
+    "confirmationId": "Número de solicitud",
+    "confirmationStatusLink": "Ver el estado de tu reserva",
+    "confirmationAnother": "Hacer otra solicitud",
     "error": "No pudimos consultar la disponibilidad. Edita la solicitud e inténtalo de nuevo."
   }
 }

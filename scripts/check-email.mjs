@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const emailLib = fs.readFileSync("lib/email.ts", "utf8");
+const schema = fs.readFileSync("prisma/schema.prisma", "utf8");
 const createApi = fs.readFileSync("pages/api/bookings/index.ts", "utf8");
 const adminApi = fs.readFileSync("pages/api/admin/bookings/[id].ts", "utf8");
 const customerApi = fs.readFileSync("pages/api/customer/bookings/[id].ts", "utf8");
@@ -15,6 +16,10 @@ assert.match(emailLib, /ADMIN_ALERT_EMAILS/);
 assert.match(emailLib, /skipped: true/, "missing key skips instead of failing");
 assert.match(emailLib, /AbortController/, "send has a timeout");
 assert.match(createApi, /sendBookingReceivedEmails\(/, "request-received email on create");
+assert.match(createApi, /req\.body\.locale === "en" \? "en" : "es"/, "create API validates the guest locale");
+assert.match(schema, /locale\s+String\s+@default\("es"\)/, "guest locale persists on the inquiry");
+assert.match(adminApi, /locale: current\.locale/, "status emails reuse the stored guest locale");
+assert.match(customerApi, /locale: booking\.locale/, "customer cancel reuses the stored guest locale");
 assert.match(adminApi, /sendBookingScheduledEmail\(emailBooking\)/, "scheduled email on confirm");
 assert.match(adminApi, /status === "MANAGEMENT_CANCELLED" && !isCancelledStatus\(current\.status\)/, "management cancel emails once");
 assert.match(adminApi, /current\.status !== "SCHEDULED"/, "re-saving scheduled does not re-send");
@@ -45,20 +50,34 @@ const booking = {
   ],
 };
 
-// Pure template behavior.
+// Pure template behavior. Guest emails are single-language: the booking's
+// locale picks Spanish or English, never both. No locale means Spanish, the
+// site's default language.
 const received = email.buildRequestReceivedEmail(booking);
 assert.deepEqual(received.to, ["guest@example.test"]);
-assert.match(received.subject, /booking request/i);
+assert.equal(received.subject, "Recibimos tu solicitud de reserva", "default locale is Spanish");
 assert.ok(received.html.includes("Cabin 1") && received.html.includes("Cabin 2"), "templates list every cabin");
 assert.ok(received.html.includes("Test &lt;Guest&gt; &amp; Co"), "HTML escapes the guest name");
 assert.ok(!received.html.includes("Test <Guest>"), "no raw HTML injection");
-assert.ok(received.text.includes("Cabin 1") && received.text.includes("March"), "text part carries the stays");
-assert.match(received.html + received.text, /es-MX|Recibimos tu solicitud/, "Spanish section present");
-const scheduled = email.buildScheduledEmail(booking);
-assert.match(scheduled.subject, /confirmada|confirmed/i);
+assert.ok(!received.html.includes("We received your booking request"), "Spanish email carries no English section");
+assert.ok(!received.text.includes("Your booking status"), "Spanish text part stays Spanish");
+const receivedEn = email.buildRequestReceivedEmail({ ...booking, locale: "en" });
+assert.equal(receivedEn.subject, "We received your booking request");
+assert.ok(receivedEn.text.includes("Cabin 1") && receivedEn.text.includes("March"), "text part carries the stays");
+assert.ok(!receivedEn.html.includes("Recibimos tu solicitud"), "English email carries no Spanish section");
+assert.ok(receivedEn.html.includes("Test &lt;Guest&gt; &amp; Co"), "English HTML escapes the guest name too");
+const scheduled = email.buildScheduledEmail({ ...booking, locale: "en" });
+assert.equal(scheduled.subject, "Your booking is confirmed");
 assert.match(scheduled.text, /Check-in at 1:00 PM, check-out at 12:00 PM\./);
+const scheduledEs = email.buildScheduledEmail(booking);
+assert.equal(scheduledEs.subject, "Tu reserva está confirmada");
+assert.match(scheduledEs.text, /Entrada a la 1:00 p\. m\., salida a las 12:00 p\. m\./);
+assert.ok(!scheduledEs.text.includes("Check-in"), "Spanish confirmation carries no English section");
 const cancelled = email.buildCancelledEmail(booking);
-assert.match(cancelled.subject, /cancelada|cancelled/i);
+assert.equal(cancelled.subject, "Tu reserva fue cancelada");
+const cancelledEn = email.buildCancelledEmail({ ...booking, locale: "en" });
+assert.equal(cancelledEn.subject, "Your booking was cancelled");
+assert.ok(!cancelledEn.html.includes("cancelada"), "English cancellation carries no Spanish section");
 assert.equal(email.formatStayDate(new Date("2027-03-05T13:00:00.000Z"), "en"), "Friday, March 5, 2027");
 assert.equal(email.formatHour(13, "en"), "1:00 PM");
 assert.equal(email.formatHour(12, "es"), "12:00 p. m.");

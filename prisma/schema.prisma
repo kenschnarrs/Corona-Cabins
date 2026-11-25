@@ -39,6 +39,8 @@ model Inquiry {
   customer_name  String
   customer_email String
   customer_phone String
+  // Guest's site language at booking time; drives single-language emails.
+  locale         String          @default("es")
   notes          String          @db.Text
   created_at     DateTime        @default(now())
   updated_at     DateTime        @updatedAt

@@ -21,6 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const customerEmail = customerAuth.email;
   const customerPhone = clean(req.body.customerPhone, 40);
   const notes = clean(req.body.notes, 2000);
+  // Guest emails go out in the site language the guest booked in.
+  const locale = req.body.locale === "en" ? "en" : "es";
   if (!cabinIds.length || cabinIds.length > 10 || new Set(cabinIds).size !== cabinIds.length) return res.status(400).json({ error: "Choose at least one cabin." });
   if (customerName.length < 2 || !emailPattern.test(customerEmail) || customerPhone.length < 7) return res.status(400).json({ error: "Enter your name, a valid email, and a phone number." });
   try {
@@ -37,6 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           customer_name: customerName,
           customer_email: customerEmail,
           customer_phone: customerPhone,
+          locale,
           notes,
           cabins: { create: cabins.map((cabin) => ({ cabinId: cabin.id, startDate, endDate, header: `Booking request for ${cabin.name}`, body: notes })) },
         },
@@ -51,6 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       customerEmail,
       customerPhone,
       notes,
+      locale,
       stays: result.cabinNames.map((cabinName) => ({ cabinName, startDate, endDate })),
     });
     return res.status(201).json({ ok: true, requestId: result.id });
