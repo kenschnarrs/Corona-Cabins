@@ -85,7 +85,7 @@ export default function AdminCalendar(initial: Props) {
   return <Layout><Seo title="Calendar sync | Cabañas Corona" path="/admin/calendar"/><main className="mx-auto max-w-[760px] px-5 py-12">
     <p className="font-sans text-xs font-bold uppercase tracking-[.18em] text-eyebrow">Admin</p>
     <h1 className="m-0 text-[clamp(38px,5vw,60px)] font-medium leading-none tracking-[-.045em]">Google Calendar sync</h1>
-    <p className="text-muted">Confirmed bookings appear on one Google Calendar, one event per cabin stay. Pending requests stay off the calendar; cancellations remove their events. Events are pinned to Eastern time (check-in 1 PM, check-out 12 PM).</p>
+    <p className="text-muted">Confirmed bookings appear on one Google Calendar, one event per cabin stay. Pending requests stay off the calendar; cancellations remove their events. Events are pinned to cabin time (America/Chihuahua, UTC-6 year-round; check-in 1 PM, check-out 12 PM).</p>
     {message && <p className="mt-6 border border-cardborder bg-card p-4 font-sans font-bold">{message}</p>}
     {error && <p className="mt-6 border border-[#b55332] bg-[#fff0e8] p-4 font-sans font-bold">{error}</p>}
     <section className="mt-8 border border-cardborder bg-card p-6 shadow">
@@ -100,7 +100,7 @@ export default function AdminCalendar(initial: Props) {
     </section>
     <section className="mt-6 border border-cardborder bg-card p-6 shadow">
       <h2 className="m-0 text-2xl">2. Pick the calendar</h2>
-      <p className="font-sans text-sm text-muted">The calendar ID from Google Calendar settings (it looks like <code>…@group.calendar.google.com</code>). The calendar&apos;s own display zone is stuck on Central; the sync pins Eastern on every event, so no change is needed there.</p>
+      <p className="font-sans text-sm text-muted">The calendar ID from Google Calendar settings (it looks like <code>…@group.calendar.google.com</code>). The calendar&apos;s own display zone is stuck on Central; the sync pins cabin time (America/Chihuahua) on every event, so no change is needed there.</p>
       <label className="mt-4 block font-sans text-xs font-bold uppercase tracking-[.12em]">Calendar ID
         <input value={calendarId} onChange={(e) => setCalendarId(e.target.value)} className="mt-2 w-full border border-cardborder bg-white p-3 font-sans text-sm font-normal normal-case tracking-normal" placeholder="…@group.calendar.google.com" />
       </label>
