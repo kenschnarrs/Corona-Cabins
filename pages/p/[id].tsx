@@ -74,6 +74,17 @@ const CabinShowPage: React.FC<CabinShowPageProps> = ({ cabin }) => {
           </p>
         </div>
         <div className="rich-text-display mt-4 text-lg leading-relaxed text-muted" dangerouslySetInnerHTML={{ __html: lang === "es" ? cabin.description_es : cabin.description_en }} />
+        <div className="mt-8">
+          <Link
+            href={`/?cabin=${cabin.id}#booking`}
+            className="inline-block bg-terra px-6 py-4 font-sans text-xs font-extrabold uppercase tracking-[.13em] text-white"
+          >
+            {t.detail.reserve}
+          </Link>
+          <p className="mt-3 max-w-[520px] font-sans text-xs leading-relaxed text-muted">
+            {t.detail.reserveNote}
+          </p>
+        </div>
         <h2 className="mb-3 mt-10 font-sans text-xs font-bold uppercase tracking-[0.24em] text-eyebrow">
           {t.detail.amenitiesHeading}
         </h2>

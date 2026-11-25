@@ -77,6 +77,8 @@
     "tempPhoto": "Temporary photo",
     "descriptionHeading": "Description",
     "amenitiesHeading": "Amenities",
+    "reserve": "Reserve this cabin",
+    "reserveNote": "Starts the booking request with this cabin selected. You can add more cabins before sending.",
     "notFound": "We could not find this cabin."
   },
   "inquiries": {
