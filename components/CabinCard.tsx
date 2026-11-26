@@ -23,7 +23,7 @@ const CabinCard: React.FC<Props> = ({ cabin, index }) => {
         className="card-photo relative h-[290px] bg-cover bg-center sm:h-[400px] md:h-[320px]"
         style={{ backgroundImage: `url('${photo.url}')` }}
         role="img"
-        aria-label={photo.alt}
+        aria-label={photo.alt[lang]}
       >
         <span className="absolute left-[18px] top-[18px] z-[1] font-sans text-xs font-bold tracking-[0.18em] text-white">
           {String(index + 1).padStart(2, "0")}
