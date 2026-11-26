@@ -46,8 +46,8 @@ const CabinShowPage: React.FC<CabinShowPageProps> = ({ cabin }) => {
         title={`${name} | ${t.meta.title}`}
         description={copy?.desc ?? t.meta.description}
         path={`/p/${cabin.id}`}
-        image={photo.url}
-        imageAlt={photo.alt}
+        image={photo.ogUrl}
+        imageAlt={photo.alt[lang]}
       />
       <main className="mx-auto max-w-[960px] px-5 py-12 sm:px-8">
         <p className="font-sans text-sm">

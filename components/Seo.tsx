@@ -1,7 +1,7 @@
 import React from "react";
 import Head from "next/head";
 import { useLanguage } from "../lib/i18n";
-import { HERO_PLACEHOLDER } from "../lib/placeholders";
+import { HERO_PHOTO, HOME_OG_PHOTO } from "../lib/placeholders";
 import { ogImageUrl, SITE_URL } from "../lib/seo";
 
 export { SITE_URL };
@@ -21,9 +21,8 @@ const Seo: React.FC<Props> = ({ title, description, path = "/", image, imageAlt 
   const fullTitle = title ?? t.meta.title;
   const desc = description ?? t.meta.description;
   const url = `${SITE_URL}${path}`;
-  // Temporary placeholder hero until Ken supplies real property photos.
-  const previewImage = ogImageUrl(image ?? HERO_PLACEHOLDER.url);
-  const previewAlt = imageAlt ?? HERO_PLACEHOLDER.alt;
+  const previewImage = ogImageUrl(image ?? HOME_OG_PHOTO);
+  const previewAlt = imageAlt ?? HERO_PHOTO.alt[lang];
   return (
     <Head>
       <title>{fullTitle}</title>

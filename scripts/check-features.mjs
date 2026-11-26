@@ -129,15 +129,25 @@ const img = (url, type, sort_order) => ({ id: url, url, type, cabinId: "c", sort
 const real = gallery.galleryPhotos("Cabaña Grande", [img("u2", "Bedroom1", 2), img("u3", "Kitchen", 3), img("u1", "Primary", 9), img("u4", "Other", 1)]);
 assert.deepEqual(real.map((p) => p.url), ["u1", "u4", "u2", "u3"], "Primary first, then admin order");
 assert.ok(real.every((p) => !p.isPlaceholder), "real photos are never labeled temporary");
+const placeholders = await load("placeholders");
 const none2 = gallery.galleryPhotos("Cabaña Grande", []);
-assert.equal(none2.length, gallery.MIN_GALLERY_PHOTOS, "no photos: filled with placeholders");
-assert.ok(none2.every((p) => p.isPlaceholder), "placeholders are marked temporary");
+assert.equal(none2.length, gallery.MIN_GALLERY_PHOTOS, "no uploads: filled from the cabin's own photos");
+assert.ok(none2.every((p) => !p.isPlaceholder && p.url.startsWith("/photos/cabana-grande-")), "fill photos are the cabin's own real photos, not temporary placeholders");
 assert.equal(new Set(none2.map((p) => p.url)).size, none2.length, "no duplicate photos");
 const one = gallery.galleryPhotos("Cabaña Mediana", [img("real", "Primary", 0)]);
 assert.equal(one[0].url, "real");
 assert.equal(one[0].isPlaceholder, false);
-assert.ok(one.slice(1).every((p) => p.isPlaceholder) && one.length === gallery.MIN_GALLERY_PHOTOS, "one real photo is topped up with placeholders");
-assert.equal(gallery.galleryPhotos("Palapa", []).length >= 1, true, "unknown cabin name still gets a gallery");
+assert.ok(one.slice(1).every((p) => !p.isPlaceholder && p.url.startsWith("/photos/cabana-mediana-")) && one.length === gallery.MIN_GALLERY_PHOTOS, "one upload is topped up from the cabin's own photos");
+assert.equal(gallery.galleryPhotos("Cabaña Desconocida", []).length >= 1, true, "unknown cabin name still gets a gallery");
+for (const name of ["Cabaña Grande", "Cabaña Mediana", "Cabaña Pequeña"]) {
+  assert.ok(placeholders.CABIN_PHOTOS[name]?.length >= gallery.MIN_GALLERY_PHOTOS, `${name} has a full photo set`);
+  assert.ok(placeholders.CABIN_OG_PHOTOS[name], `${name} has a share-card image`);
+  assert.ok(placeholders.CABIN_PHOTOS[name].every((p) => !p.temporary), `${name}'s photos are real, not placeholders`);
+}
+// No real palapa photo yet: it stays on labeled temporary placeholders.
+assert.ok(placeholders.CABIN_PHOTOS["Palapa"].length >= gallery.MIN_GALLERY_PHOTOS, "Palapa keeps a full placeholder set");
+assert.ok(placeholders.CABIN_PHOTOS["Palapa"].every((p) => p.temporary), "Palapa's photos are labeled temporary");
+assert.ok(gallery.galleryPhotos("Palapa", []).every((p) => p.isPlaceholder), "Palapa gallery shows labeled placeholders");
 
 // --- Wiring ----------------------------------------------------------------
 const read = (f) => fs.readFileSync(f, "utf8");
@@ -146,7 +156,7 @@ assert.match(flow, /<AvailabilityCalendar /, "booking form shows the availabilit
 assert.match(flow, /whatsappLink\(/, "confirmation screen has the WhatsApp link");
 assert.match(read("pages/customer/bookings.tsx"), /waHref\(/, "status page has the WhatsApp link");
 assert.match(read("pages/p/[id].tsx"), /<CabinGallery /, "cabin page shows the gallery");
-assert.match(read("pages/p/[id].tsx"), /image=\{photo\.url\}/, "cabin page shares its own photo");
+assert.match(read("pages/p/[id].tsx"), /image=\{photo\.ogUrl\}/, "cabin page shares its own share-card image");
 assert.match(read("pages/api/bookings/calendar.ts"), /req\.method !== "GET"/, "calendar endpoint is read-only");
 assert.doesNotMatch(read("pages/api/bookings/calendar.ts"), /requireAdmin|session/, "calendar endpoint is public");
 const confirmApi = read("pages/api/admin/bookings/email-confirm.ts");

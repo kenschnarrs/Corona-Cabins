@@ -1,7 +1,7 @@
 import React from "react";
 import Logo from "./Logo";
 import LanguageToggle from "./LanguageToggle";
-import { HERO_PLACEHOLDER } from "../lib/placeholders";
+import { HERO_PHOTO } from "../lib/placeholders";
 import { useLanguage } from "../lib/i18n";
 
 const Hero: React.FC = () => {
@@ -10,7 +10,7 @@ const Hero: React.FC = () => {
     <section
       className="hero-bg relative min-h-[820px] overflow-hidden text-[#fff7e8] sm:min-h-[92vh]"
       style={{
-        ["--hero-url" as string]: `url("${HERO_PLACEHOLDER.url}")`,
+        ["--hero-url" as string]: `url("${HERO_PHOTO.url}")`,
       }}
     >
       <div className="hero-shade absolute inset-0" />
@@ -43,9 +43,6 @@ const Hero: React.FC = () => {
           ☼
         </span>
         <span className="flex-1">{t.hero.location}</span>
-        <span className="whitespace-nowrap font-sans text-[10px] opacity-80">
-          {t.hero.tempPhoto}
-        </span>
       </div>
     </section>
   );
