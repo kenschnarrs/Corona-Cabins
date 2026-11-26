@@ -26,7 +26,7 @@ export function galleryPhotos(cabinName: string, images: CabinImageProps[]): Gal
   const out = [...real];
   for (const photo of cabinPhotos(cabinName)) {
     if (out.length >= MIN_GALLERY_PHOTOS) break;
-    if (!seen.has(photo.url)) { seen.add(photo.url); out.push({ ...photo, isPlaceholder: false }); }
+    if (!seen.has(photo.url)) { seen.add(photo.url); out.push({ ...photo, isPlaceholder: photo.temporary ?? false }); }
   }
   return out;
 }
